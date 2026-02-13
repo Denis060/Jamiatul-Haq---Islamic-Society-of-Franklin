@@ -1,0 +1,7 @@
+{
+  "name": "Jamiatul Haq - Islamic Society of Franklin Township",
+  "description": "The official website for Islamic Society of Franklin Township (Jamiatul Haq) in Somerset, NJ. Featuring prayer times, community events, services, and an admin dashboard.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
