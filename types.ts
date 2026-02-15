@@ -9,6 +9,7 @@ export interface MasjidProfile {
   email: string;
   jumua_time: string;
   whatsapp_link?: string;
+  facilities_image_url?: string;
   updated_at?: string;
 }
 

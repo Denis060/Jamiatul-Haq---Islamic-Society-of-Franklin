@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import { Event } from '../../types';
-// Added Clock to the imported icons from lucide-react
 import { Plus, Trash2, Edit2, Check, X, Upload, Calendar, MapPin, ImageIcon, Loader2, AlertCircle, Clock } from 'lucide-react';
 
 const AdminEvents = () => {
@@ -123,6 +122,8 @@ const AdminEvents = () => {
     setError(null);
   };
 
+  const inputClasses = "w-full p-5 bg-white border-2 border-[#f0e6d2] rounded-[1.5rem] focus:border-[#d4af37] focus:ring-4 focus:ring-[#d4af37]/5 outline-none transition-all font-bold text-[#042f24] placeholder:text-slate-300 shadow-sm";
+
   return (
     <div className="max-w-6xl mx-auto pb-20">
       <div className="flex justify-between items-center mb-12">
@@ -159,7 +160,7 @@ const AdminEvents = () => {
                     setTitle(e.target.value);
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
                   }}
-                  className="w-full p-5 border-2 border-[#f0e6d2] rounded-[1.5rem] focus:border-[#d4af37] outline-none transition-all font-bold text-[#042f24]"
+                  className={inputClasses}
                   required
                   placeholder="e.g. Community Potluck"
                 />
@@ -172,7 +173,7 @@ const AdminEvents = () => {
                     type="datetime-local"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    className="w-full p-5 border-2 border-[#f0e6d2] rounded-[1.5rem] focus:border-[#d4af37] outline-none transition-all font-bold text-[#042f24]"
+                    className={inputClasses}
                     required
                   />
                 </div>
@@ -181,7 +182,7 @@ const AdminEvents = () => {
                   <input 
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="w-full p-5 border-2 border-[#f0e6d2] rounded-[1.5rem] focus:border-[#d4af37] outline-none transition-all font-bold text-[#042f24]"
+                    className={inputClasses}
                     required
                     placeholder="Masjid Hall"
                   />
@@ -193,7 +194,7 @@ const AdminEvents = () => {
                 <textarea 
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-5 border-2 border-[#f0e6d2] rounded-[1.5rem] focus:border-[#d4af37] outline-none transition-all font-medium text-slate-700 h-44 resize-none"
+                  className={`${inputClasses} h-44 resize-none font-medium text-slate-700`}
                   required
                   placeholder="Describe the event..."
                 />
@@ -228,7 +229,7 @@ const AdminEvents = () => {
                       <div className="p-6 bg-white rounded-full shadow-lg mb-4">
                          <Upload size={32} />
                       </div>
-                      <span className="font-black uppercase tracking-widest text-xs">Upload Event Cover</span>
+                      <span className="font-black uppercase tracking-widest text-xs text-center">Upload Event Cover</span>
                       <span className="text-[10px] mt-2 text-slate-400">JPG, PNG up to 5MB</span>
                     </div>
                   )}

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, Calendar, ArrowRight, Heart, Loader2 } from 'lucide-react';
+import { MapPin, Clock, Calendar, ArrowRight, Heart, Loader2, ImageIcon, Megaphone, Sparkles, Pin, Moon } from 'lucide-react';
 import { supabase, MOCK_PROFILE, MOCK_PRAYER_TIMES } from '../services/supabase';
 import { MasjidProfile, PrayerTimes, Event } from '../types';
 
@@ -9,24 +9,26 @@ const PublicHome = () => {
   const [profile, setProfile] = useState<any>(null);
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
   const [events, setEvents] = useState<Event[]>([]);
+  const [latestNews, setLatestNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadHomeData = async () => {
       try {
-        const [profRes, prayRes, eventRes] = await Promise.all([
+        const [profRes, prayRes, eventRes, newsRes] = await Promise.all([
           supabase.from('masjid_profile').select('*').single(),
           supabase.from('prayer_times_weekly').select('*').single(),
-          supabase.from('events').select('*').eq('status', 'published').order('start_time', { ascending: true }).limit(3)
+          supabase.from('events').select('*').eq('status', 'published').order('start_time', { ascending: true }).limit(3),
+          supabase.from('announcements').select('*').eq('status', 'published').order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(2)
         ]);
 
-        // Use Supabase data if available, otherwise fallback to MOCK
         setProfile(profRes.data || MOCK_PROFILE);
         setPrayerTimes(prayRes.data || MOCK_PRAYER_TIMES);
         if (eventRes.data) setEvents(eventRes.data);
+        if (newsRes.data) setLatestNews(newsRes.data);
         
       } catch (err) {
-        console.error("Supabase not ready, using fallbacks:", err);
+        console.error("Supabase error, using fallbacks:", err);
         setProfile(MOCK_PROFILE);
         setPrayerTimes(MOCK_PRAYER_TIMES);
       } finally {
@@ -39,13 +41,8 @@ const PublicHome = () => {
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#042f24]">
-      <div className="relative">
-        <Loader2 className="animate-spin text-[#d4af37] mb-4" size={64} />
-        <div className="absolute inset-0 flex items-center justify-center">
-           <div className="w-4 h-4 bg-[#d4af37] rounded-full animate-ping"></div>
-        </div>
-      </div>
-      <p className="text-[#d4af37] font-black tracking-widest uppercase text-xs mt-4">Opening Sanctuary...</p>
+      <Loader2 className="animate-spin text-[#d4af37] mb-4" size={64} />
+      <p className="text-[#d4af37] font-black tracking-widest uppercase text-xs mt-4 animate-pulse">Bismillah...</p>
     </div>
   );
 
@@ -72,15 +69,71 @@ const PublicHome = () => {
             <Link to="/prayer-times" className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black shadow-2xl hover:bg-white transition-all transform hover:-translate-y-1 flex items-center gap-3 uppercase text-sm tracking-widest">
               <Clock size={20} /> Prayer Schedule
             </Link>
-            <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(profile?.address || '')}`} target="_blank" rel="noopener noreferrer" className="bg-white/10 backdrop-blur-md border-2 border-white/20 text-white px-10 py-4 rounded-full font-black hover:bg-white/20 transition-all flex items-center gap-3 uppercase text-sm tracking-widest">
-              <MapPin size={20} /> Get Directions
-            </a>
+            <Link to="/ramadan" className="bg-white/10 backdrop-blur-md border-2 border-[#d4af37] text-white px-10 py-4 rounded-full font-black hover:bg-[#d4af37] hover:text-[#042f24] transition-all flex items-center gap-3 uppercase text-sm tracking-widest">
+              <Moon size={20} /> Ramadan Hub
+            </Link>
           </div>
         </div>
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#d4af37] text-[#042f24] px-8 py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center gap-2">
           <Heart size={18} fill="currentColor" /> Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}
         </div>
       </section>
+
+      {/* Ramadan Special CTA */}
+      <section className="bg-emerald-950 py-16 border-b-4 border-[#d4af37]">
+         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="flex items-center gap-6">
+               <div className="p-4 bg-[#d4af37] text-[#042f24] rounded-3xl shadow-sacred">
+                  <Moon size={40} fill="currentColor" />
+               </div>
+               <div>
+                  <h2 className="text-3xl font-black text-white italic">Ramadan is Approaching</h2>
+                  <p className="text-[#d4af37] font-bold italic">Check the Iftar schedule and sponsorship opportunities.</p>
+               </div>
+            </div>
+            <Link to="/ramadan" className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-white transition-all shadow-2xl">
+               Enter Ramadan Portal
+            </Link>
+         </div>
+      </section>
+
+      {/* News & Announcements Bar / Section */}
+      {latestNews.length > 0 && (
+        <section className="py-24 bg-[#042f24] relative overflow-hidden border-y-4 border-[#d4af37]">
+          <div className="absolute inset-0 opacity-5 bg-islamic-pattern"></div>
+          <div className="max-w-7xl mx-auto px-4 relative z-10">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
+              <div>
+                <span className="text-[#d4af37] font-black uppercase tracking-[0.4em] text-[10px] block mb-2">Notice Board</span>
+                <h2 className="text-4xl md:text-6xl font-black text-white italic">News & Alerts</h2>
+              </div>
+              <Link to="/announcements" className="text-[#d4af37] font-black uppercase tracking-widest text-xs flex items-center gap-2 hover:text-white transition-colors">
+                Read All Updates <ArrowRight size={18} />
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {latestNews.map((news) => (
+                <Link to="/announcements" key={news.id} className={`group bg-white/5 backdrop-blur-md p-10 rounded-[3.5rem] border-2 transition-all hover:bg-white/10 ${
+                  news.is_pinned ? 'border-[#d4af37]' : 'border-white/10'
+                }`}>
+                  <div className="flex justify-between items-start mb-6">
+                    <span className="bg-[#d4af37] text-[#042f24] px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg">
+                      {news.type === 'Ramadan' ? <Sparkles size={12} /> : news.is_pinned ? <Pin size={12} /> : <Megaphone size={12} />}
+                      {news.type}
+                    </span>
+                    <span className="text-white/30 text-[9px] font-black uppercase tracking-widest">
+                      {new Date(news.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl font-black text-white italic mb-4 leading-tight group-hover:text-[#d4af37] transition-colors">{news.title}</h3>
+                  <p className="text-white/50 text-sm italic leading-relaxed line-clamp-2">"{news.body}"</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Prayer Board */}
       <section className="py-24 bg-[#fdfbf7] relative overflow-hidden">
@@ -128,7 +181,7 @@ const PublicHome = () => {
                   <p className="text-white/60 line-clamp-3 mb-10 flex-grow italic text-sm leading-relaxed">{event.description}</p>
                   <div className="pt-8 border-t border-white/10 flex justify-between items-center text-[10px] font-black tracking-widest uppercase">
                     <span className="text-white/30">{new Date(event.start_time).toLocaleDateString()}</span>
-                    <Link to="/events" className="text-[#d4af37] hover:underline">Details</Link>
+                    <Link to={`/events/${event.slug}`} className="text-[#d4af37] hover:underline">Details</Link>
                   </div>
                 </div>
               ))
