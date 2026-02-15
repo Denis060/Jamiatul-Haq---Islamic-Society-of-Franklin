@@ -57,19 +57,18 @@ const Navbar = () => {
               <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/50">Franklin Township, NJ</span>
             </Link>
           </div>
-          <div className="hidden md:flex items-center space-x-10">
+          <div className="hidden md:flex items-center space-x-8 lg:space-x-10">
             {navLinks.map((link) => (
               <Link 
                 key={link.path} 
                 to={link.path}
-                className={`text-xs font-black uppercase tracking-[0.2em] transition-all hover:text-[#d4af37] ${
+                className={`text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] transition-all hover:text-[#d4af37] ${
                   location.pathname === link.path || (link.path.startsWith('/gallery') && location.pathname.startsWith('/gallery')) || (link.path.startsWith('/events') && location.pathname.startsWith('/events')) ? 'text-[#d4af37] border-b-2 border-[#d4af37] pb-1' : ''
                 }`}
               >
                 {link.name}
               </Link>
             ))}
-            <Link to="/admin/login" className="bg-[#d4af37] text-[#042f24] px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest hover:bg-white transition-all">Portal</Link>
           </div>
           <div className="md:hidden flex items-center">
             <button onClick={() => setIsOpen(!isOpen)} className="text-[#d4af37] focus:outline-none">
