@@ -1,21 +1,32 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase';
+import { supabase, MOCK_PROFILE } from '../services/supabase';
 import { 
   Users, Heart, GraduationCap, Home, Clock, Star, Landmark, Loader2
 } from 'lucide-react';
 
 const PublicServices = () => {
   const [services, setServices] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchServices = async () => {
-      const { data } = await supabase.from('services').select('*').order('sort_order', { ascending: true });
-      if (data) setServices(data);
-      setLoading(false);
+    const fetchData = async () => {
+      try {
+        const [servicesRes, profileRes] = await Promise.all([
+          supabase.from('services').select('*').order('sort_order', { ascending: true }),
+          supabase.from('masjid_profile').select('*').single()
+        ]);
+        
+        if (servicesRes.data) setServices(servicesRes.data);
+        setProfile(profileRes.data || MOCK_PROFILE);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchServices();
+    fetchData();
   }, []);
 
   const getIcon = (name: string) => {
@@ -35,12 +46,19 @@ const PublicServices = () => {
     </div>
   );
 
+  const facilitiesImage = profile?.facilities_image_url || "https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&q=80&w=800";
+  
+  // Parse facilities list from comma separated string
+  const facilitiesArray = profile?.facilities_list 
+    ? profile.facilities_list.split(',').map((item: string) => item.trim()).filter((item: string) => item !== "")
+    : ['Ample Parking', 'Dedicated Wudu Area', 'Sisters Prayer Hall', 'Islamic Library'];
+
   return (
     <div className="bg-[#fdfbf7] min-h-screen">
       <div className="bg-[#042f24] py-32 px-4 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 bg-islamic-pattern"></div>
         <h1 className="text-5xl md:text-7xl font-black text-white italic mb-6">Our Services</h1>
-        <p className="text-[#d4af37] max-w-2xl mx-auto text-xl">Providing spiritual and social support to the Somerset community since 2002.</p>
+        <p className="text-[#d4af37] max-w-2xl mx-auto text-xl italic">Providing spiritual and social support to the Somerset community since 2002.</p>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-24">
@@ -68,10 +86,10 @@ const PublicServices = () => {
               <Landmark size={48} className="text-[#d4af37]" /> Masjid Facilities
             </h2>
             <p className="text-white/70 mb-12 text-xl italic leading-relaxed">
-              Jamiatul Haq is equipped with modern facilities to ensure our community members can worship comfortably.
+              {profile?.common_name || 'Jamiatul Haq'} is equipped with modern facilities to ensure our community members can worship comfortably.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {['Ample Parking', 'Dedicated Wudu Area', 'Sisters Prayer Hall', 'Islamic Library'].map((f, i) => (
+              {facilitiesArray.map((f, i) => (
                 <div key={i} className="bg-white/5 border border-white/10 px-8 py-5 rounded-2xl flex items-center gap-4 font-black uppercase tracking-widest text-[10px] text-[#d4af37]">
                   <div className="w-2 h-2 rounded-full bg-[#d4af37]"></div>
                   {f}
@@ -82,9 +100,9 @@ const PublicServices = () => {
           <div className="w-full md:w-1/3 relative">
             <div className="absolute -inset-4 bg-[#d4af37]/20 rounded-[3rem] rotate-3"></div>
             <img 
-              src="https://images.unsplash.com/photo-1591604466107-ec97de577aff?auto=format&fit=crop&q=80&w=800" 
+              src={facilitiesImage} 
               className="rounded-[3rem] shadow-2xl w-full h-96 object-cover relative z-10"
-              alt="Masjid Interior"
+              alt="Masjid Facilities"
             />
           </div>
         </div>

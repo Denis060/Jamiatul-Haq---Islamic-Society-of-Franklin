@@ -94,12 +94,13 @@ const PublicContact = () => {
 
             <div className="rounded-[3rem] overflow-hidden shadow-2xl border-4 border-[#f0e6d2] h-96">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d3032.531273934522!2d-74.4789!3d40.4871!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c3c1374526017b%3A0x64e32080a2947683!2s385%20Lewis%20St%2C%20Somerset%2C%20NJ%2008873!5e0!3m2!1sen!2sus!4v1710000000000!5m2!1sen!2sus" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3032.544155169993!2d-74.48154672343465!3d40.48681555146524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c3c1374526017b%3A0x64e32080a2947683!2s385%20Lewis%20St%2C%20Somerset%2C%20NJ%2008873!5e0!3m2!1sen!2sus!4v1711130635198!5m2!1sen!2sus" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
                 allowFullScreen={true} 
                 loading="lazy"
+                title="Masjid Location Map"
               ></iframe>
             </div>
           </div>

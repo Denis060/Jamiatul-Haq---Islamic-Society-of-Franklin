@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Users, Calendar, Bell, Mail, TrendingUp, Clock, 
-  ChevronRight, ArrowUpRight, Settings, MessageSquare, Loader2
+  ChevronRight, ArrowUpRight, Settings, MessageSquare, Loader2, Megaphone
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../services/supabase';
@@ -31,7 +31,8 @@ const AdminDashboard = () => {
     events: 0,
     messages: 0,
     newMessages: 0,
-    activeAnnouncements: 0
+    teamCount: 0,
+    announcementCount: 0
   });
   const [recentMessages, setRecentMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,17 +41,20 @@ const AdminDashboard = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        const [eventsRes, messagesRes, newMessagesRes] = await Promise.all([
+        const [eventsRes, messagesRes, newMessagesRes, teamRes, newsRes] = await Promise.all([
           supabase.from('events').select('id', { count: 'exact' }),
           supabase.from('contact_messages').select('id', { count: 'exact' }),
-          supabase.from('contact_messages').select('*').eq('is_read', false).order('created_at', { ascending: false }).limit(3)
+          supabase.from('contact_messages').select('*').eq('is_read', false).order('created_at', { ascending: false }).limit(3),
+          supabase.from('team_members').select('id', { count: 'exact' }),
+          supabase.from('announcements').select('id', { count: 'exact' })
         ]);
 
         setStats({
           events: eventsRes.count || 0,
           messages: messagesRes.count || 0,
           newMessages: newMessagesRes.data?.length || 0,
-          activeAnnouncements: 0 // Fetch from real announcements table if implemented
+          teamCount: teamRes.count || 0,
+          announcementCount: newsRes.count || 0
         });
 
         setRecentMessages(newMessagesRes.data || []);
@@ -75,18 +79,18 @@ const AdminDashboard = () => {
       <div className="flex justify-between items-end mb-12">
         <div>
           <h1 className="text-4xl font-black text-[#042f24] italic tracking-tight">Assalamu Alaikum</h1>
-          <p className="text-slate-500 font-medium">Here's your community overview.</p>
+          <p className="text-slate-500 font-medium">Welcome back to the management portal.</p>
         </div>
         <div className="bg-[#f0e6d2] text-[#042f24] px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-          <Clock size={16} className="text-[#d4af37]" /> Live Status
+          <Clock size={16} className="text-[#d4af37]" /> Portal Active
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
         <StatCard title="Total Events" value={stats.events} icon={Calendar} color="bg-blue-500" />
         <StatCard title="Messages" value={stats.messages} icon={Mail} color="bg-[#042f24]" subValue={`${stats.newMessages} NEW`} />
-        <StatCard title="Announcements" value="12" icon={Bell} color="bg-[#d4af37]" />
-        <StatCard title="Team Members" value="6" icon={Users} color="bg-purple-500" />
+        <StatCard title="Announcements" value={stats.announcementCount} icon={Megaphone} color="bg-[#d4af37]" />
+        <StatCard title="Team Members" value={stats.teamCount} icon={Users} color="bg-purple-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -131,23 +135,23 @@ const AdminDashboard = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 mihrab-shape -rotate-12 translate-x-1/4 -translate-y-1/4"></div>
           
           <div className="relative z-10">
-            <h2 className="text-3xl font-black italic mb-10 text-[#d4af37]">Command Center</h2>
+            <h2 className="text-3xl font-black italic mb-10 text-[#d4af37]">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-6">
-              <Link to="/admin/events" className="bg-white/5 hover:bg-[#d4af37] group p-8 rounded-[2rem] transition-all border border-white/10 flex flex-col items-center text-center">
-                <Calendar className="mb-4 text-[#d4af37] group-hover:text-[#042f24]" size={32} />
-                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">New Event</h4>
+              <Link to="/admin/announcements" className="bg-white/5 hover:bg-[#d4af37] group p-8 rounded-[2rem] transition-all border border-white/10 flex flex-col items-center text-center">
+                <Megaphone className="mb-4 text-[#d4af37] group-hover:text-[#042f24]" size={32} />
+                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">Broadcast</h4>
               </Link>
-              <Link to="/admin/messages" className="bg-white/5 hover:bg-[#d4af37] group p-8 rounded-[2rem] transition-all border border-white/10 flex flex-col items-center text-center">
-                <MessageSquare className="mb-4 text-[#d4af37] group-hover:text-[#042f24]" size={32} />
-                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">Inbox</h4>
+              <Link to="/admin/leadership" className="bg-white/5 hover:bg-[#d4af37] group p-8 rounded-[2rem] transition-all border border-white/10 flex flex-col items-center text-center">
+                <Users className="mb-4 text-[#d4af37] group-hover:text-[#042f24]" size={32} />
+                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">Manage Team</h4>
               </Link>
               <Link to="/admin/profile" className="bg-white/5 hover:bg-[#d4af37] group p-8 rounded-[2rem] transition-all border border-white/10 flex flex-col items-center text-center">
                 <Clock className="mb-4 text-[#d4af37] group-hover:text-[#042f24]" size={32} />
-                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">Schedules</h4>
+                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">Prayers</h4>
               </Link>
-              <Link to="/admin/profile" className="bg-white/5 hover:bg-[#d4af37] group p-8 rounded-[2rem] transition-all border border-white/10 flex flex-col items-center text-center">
-                <Settings className="mb-4 text-[#d4af37] group-hover:text-[#042f24]" size={32} />
-                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">Settings</h4>
+              <Link to="/admin/events" className="bg-white/5 hover:bg-[#d4af37] group p-8 rounded-[2rem] transition-all border border-white/10 flex flex-col items-center text-center">
+                <Calendar className="mb-4 text-[#d4af37] group-hover:text-[#042f24]" size={32} />
+                <h4 className="font-black uppercase tracking-widest text-[10px] group-hover:text-[#042f24]">Events</h4>
               </Link>
             </div>
           </div>

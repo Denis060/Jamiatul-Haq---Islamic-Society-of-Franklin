@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Calendar, MapPin, ArrowRight, Clock, Loader2, ImageIcon } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { Event } from '../types';
@@ -72,13 +73,13 @@ const PublicEvents = () => {
                       <span className="flex items-center gap-3"><Clock size={20} /> {new Date(e.start_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
                       <span className="flex items-center gap-3"><MapPin size={20} /> {e.location}</span>
                     </div>
-                    <p className="text-slate-500 text-lg leading-relaxed mb-12 italic">
+                    <p className="text-slate-500 text-lg leading-relaxed mb-12 italic line-clamp-4">
                       {e.description}
                     </p>
                   </div>
-                  <button className="flex items-center gap-3 text-[#042f24] font-black uppercase tracking-widest text-xs hover:text-[#d4af37] transition-colors group/btn">
+                  <Link to={`/events/${e.slug}`} className="flex items-center gap-3 text-[#042f24] font-black uppercase tracking-widest text-xs hover:text-[#d4af37] transition-colors group/btn">
                     Program Details <ArrowRight size={20} className="group-hover/btn:translate-x-2 transition-transform" />
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}

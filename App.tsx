@@ -3,20 +3,29 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { 
   Home, MapPin, Clock, Calendar, Image as ImageIcon, LayoutDashboard, LogOut, Settings, 
-  Bell, Mail, Landmark, Users, Menu, X, Heart, MessageSquare
+  Bell, Mail, Landmark, Users, Menu, X, Heart, MessageSquare, Briefcase, Megaphone, Moon
 } from 'lucide-react';
 import PublicHome from './pages/PublicHome';
 import PublicPrayerTimes from './pages/PublicPrayerTimes';
 import PublicEvents from './pages/PublicEvents';
+import PublicEventDetail from './pages/PublicEventDetail';
 import PublicGallery from './pages/PublicGallery';
+import PublicAlbumDetail from './pages/PublicAlbumDetail';
 import PublicContact from './pages/PublicContact';
 import PublicServices from './pages/PublicServices';
 import PublicLeadership from './pages/PublicLeadership';
+import PublicAnnouncements from './pages/PublicAnnouncements';
+import PublicRamadan from './pages/PublicRamadan';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminEvents from './pages/admin/AdminEvents';
 import AdminProfile from './pages/admin/AdminProfile';
 import AdminMessages from './pages/admin/AdminMessages';
+import AdminGallery from './pages/admin/AdminGallery';
+import AdminServices from './pages/admin/AdminServices';
+import AdminLeadership from './pages/admin/AdminLeadership';
+import AdminAnnouncements from './pages/admin/AdminAnnouncements';
+import AdminRamadan from './pages/admin/AdminRamadan';
 import { supabase } from './services/supabase';
 
 const Navbar = () => {
@@ -29,6 +38,8 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Prayers', path: '/prayer-times' },
+    { name: 'Ramadan Hub', path: '/ramadan' },
+    { name: 'News', path: '/announcements' },
     { name: 'Events', path: '/events' },
     { name: 'Services', path: '/services' },
     { name: 'Gallery', path: '/gallery' },
@@ -52,7 +63,7 @@ const Navbar = () => {
                 key={link.path} 
                 to={link.path}
                 className={`text-xs font-black uppercase tracking-[0.2em] transition-all hover:text-[#d4af37] ${
-                  location.pathname === link.path ? 'text-[#d4af37] border-b-2 border-[#d4af37] pb-1' : ''
+                  location.pathname === link.path || (link.path.startsWith('/gallery') && location.pathname.startsWith('/gallery')) || (link.path.startsWith('/events') && location.pathname.startsWith('/events')) ? 'text-[#d4af37] border-b-2 border-[#d4af37] pb-1' : ''
                 }`}
               >
                 {link.name}
@@ -95,13 +106,11 @@ const AuthGuard = ({ children }: { children?: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
-    // Listen for auth changes (login, logout, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
@@ -143,9 +152,13 @@ const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
         <nav className="flex-1 p-8 space-y-2 font-black uppercase text-[10px] tracking-widest">
           <Link to="/admin/dashboard" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><LayoutDashboard size={18} /> Dashboard</Link>
           <Link to="/admin/messages" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><MessageSquare size={18} /> Inbox</Link>
+          <Link to="/admin/announcements" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Megaphone size={18} /> Announcements</Link>
+          <Link to="/admin/ramadan" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Moon size={18} /> Ramadan hub</Link>
           <Link to="/admin/profile" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Landmark size={18} /> Masjid Profile</Link>
+          <Link to="/admin/leadership" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Users size={18} /> Team</Link>
           <Link to="/admin/events" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Calendar size={18} /> Events</Link>
-          <Link to="/admin/announcements" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Bell size={18} /> News</Link>
+          <Link to="/admin/services" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Briefcase size={18} /> Services</Link>
+          <Link to="/admin/gallery" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><ImageIcon size={18} /> Gallery</Link>
         </nav>
         <div className="p-8">
           <button 
@@ -170,8 +183,12 @@ const App: React.FC = () => {
           {/* Public Website Routes */}
           <Route path="/" element={<PublicHome />} />
           <Route path="/prayer-times" element={<PublicPrayerTimes />} />
+          <Route path="/announcements" element={<PublicAnnouncements />} />
+          <Route path="/ramadan" element={<PublicRamadan />} />
           <Route path="/events" element={<PublicEvents />} />
+          <Route path="/events/:slug" element={<PublicEventDetail />} />
           <Route path="/gallery" element={<PublicGallery />} />
+          <Route path="/gallery/:slug" element={<PublicAlbumDetail />} />
           <Route path="/services" element={<PublicServices />} />
           <Route path="/leadership" element={<PublicLeadership />} />
           <Route path="/contact" element={<PublicContact />} />
@@ -181,9 +198,13 @@ const App: React.FC = () => {
           <Route path="/admin/dashboard" element={<AuthGuard><AdminSidebar><AdminDashboard /></AdminSidebar></AuthGuard>} />
           <Route path="/admin/messages" element={<AuthGuard><AdminSidebar><AdminMessages /></AdminSidebar></AuthGuard>} />
           <Route path="/admin/events" element={<AuthGuard><AdminSidebar><AdminEvents /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/services" element={<AuthGuard><AdminSidebar><AdminServices /></AdminSidebar></AuthGuard>} />
           <Route path="/admin/profile" element={<AuthGuard><AdminSidebar><AdminProfile /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/gallery" element={<AuthGuard><AdminSidebar><AdminGallery /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/leadership" element={<AuthGuard><AdminSidebar><AdminLeadership /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/announcements" element={<AuthGuard><AdminSidebar><AdminAnnouncements /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/ramadan" element={<AuthGuard><AdminSidebar><AdminRamadan /></AdminSidebar></AuthGuard>} />
           
-          {/* Catch-all route redirects back to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
