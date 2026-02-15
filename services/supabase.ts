@@ -1,15 +1,14 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// In a real app, these come from environment variables
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key';
+// Connection details provided for project: cvbtlidynsyhbtnrfccu
+const SUPABASE_URL = 'https://cvbtlidynsyhbtnrfccu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2YnRsaWR5bnN5aGJ0bnJmY2N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTM2NzcsImV4cCI6MjA4NjcyOTY3N30.2CbYuSWVMxzreAUjjkoyQkr5Dw_oawB8XGc3nQjw-7s';
 
-// This is a simplified client for the demo. 
-// In practice, ensure you use environment variables.
+// Initialize the Supabase client
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Mock data for the environment where real Supabase isn't connected
+// Mock data for the environment where real Supabase records haven't been created yet
 export const MOCK_PRAYER_TIMES = {
   fajr: '5:15 AM',
   dhuhr: '12:30 PM',
