@@ -16,6 +16,7 @@ import PublicLeadership from './pages/PublicLeadership';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminEvents from './pages/admin/AdminEvents';
+import AdminProfile from './pages/admin/AdminProfile';
 import { supabase } from './services/supabase';
 
 const Navbar = ({ profile }: { profile?: any }) => {
@@ -61,7 +62,6 @@ const Navbar = ({ profile }: { profile?: any }) => {
             ))}
 
           </div>
-
           <div className="md:hidden flex items-center">
             <button onClick={() => setIsOpen(!isOpen)} className="text-[#d4af37] focus:outline-none">
               {isOpen ? <X size={32} /> : <Menu size={32} />}
@@ -69,9 +69,8 @@ const Navbar = ({ profile }: { profile?: any }) => {
           </div>
         </div>
       </div>
-
       {isOpen && (
-        <div className="md:hidden bg-[#042f24] border-t-2 border-[#d4af37] animate-in slide-in-from-top duration-300">
+        <div className="md:hidden bg-[#042f24] border-t-2 border-[#d4af37]">
           <div className="px-4 pt-6 pb-12 space-y-4 text-center">
             {navLinks.map((link) => (
               <Link
@@ -94,7 +93,6 @@ const Navbar = ({ profile }: { profile?: any }) => {
 const Footer = ({ profile }: { profile?: any }) => {
   const location = useLocation();
   if (location.pathname.startsWith('/admin')) return null;
-
   return (
     <footer className="bg-[#021f18] text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-5 bg-islamic-pattern pointer-events-none"></div>
@@ -247,7 +245,6 @@ const App: React.FC = () => {
       <Navbar profile={masjidProfile} />
       <div className="flex-grow">
         <Routes>
-          {/* Public Routes */}
           <Route path="/" element={<PublicHome />} />
           <Route path="/prayer-times" element={<PublicPrayerTimes />} />
           <Route path="/events" element={<PublicEvents />} />
@@ -255,19 +252,10 @@ const App: React.FC = () => {
           <Route path="/services" element={<PublicServices />} />
           <Route path="/leadership" element={<PublicLeadership />} />
           <Route path="/contact" element={<PublicContact />} />
-
-          {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={
-            <AuthGuard>
-              <AdminSidebar><AdminDashboard /></AdminSidebar>
-            </AuthGuard>
-          } />
-          <Route path="/admin/events" element={
-            <AuthGuard>
-              <AdminSidebar><AdminEvents /></AdminSidebar>
-            </AuthGuard>
-          } />
+          <Route path="/admin/dashboard" element={<AuthGuard><AdminSidebar><AdminDashboard /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/events" element={<AuthGuard><AdminSidebar><AdminEvents /></AuthGuard>} />
+          <Route path="/admin/profile" element={<AuthGuard><AdminSidebar><AdminProfile /></AdminSidebar></AuthGuard>} />
         </Routes>
       </div>
       <Footer profile={masjidProfile} />
