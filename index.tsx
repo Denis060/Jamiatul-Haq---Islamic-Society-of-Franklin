@@ -9,11 +9,15 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );

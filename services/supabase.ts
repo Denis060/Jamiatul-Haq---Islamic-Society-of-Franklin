@@ -28,3 +28,42 @@ export const MOCK_PROFILE = {
   imam: 'Alhaji Abdullah Karim Savage',
   jumua_time: '1:15 PM'
 };
+
+// --- Service Functions ---
+
+export const fetchMasjidProfile = async () => {
+  const { data, error } = await supabase
+    .from('masjid_profile')
+    .select('*')
+    .single();
+  return { data, error };
+};
+
+export const fetchPrayerTimes = async () => {
+  // Assuming there's only one active weekly schedule or we take the latest
+  const { data, error } = await supabase
+    .from('prayer_times_weekly')
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .single();
+  return { data, error };
+};
+
+export const fetchEvents = async () => {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('status', 'published')
+    .order('start_time', { ascending: true });
+  return { data, error };
+};
+
+export const fetchAnnouncements = async () => {
+  const { data, error } = await supabase
+    .from('announcements')
+    .select('*')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false });
+  return { data, error };
+};

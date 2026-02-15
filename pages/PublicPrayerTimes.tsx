@@ -1,16 +1,23 @@
-
-import React from 'react';
-import { MOCK_PRAYER_TIMES } from '../services/supabase';
+import React, { useState, useEffect } from 'react';
+import { fetchPrayerTimes, fetchMasjidProfile } from '../services/supabase';
 import { Clock, Info, ShieldCheck, Moon } from 'lucide-react';
 
 const PublicPrayerTimes = () => {
+  const [prayerTimes, setPrayerTimes] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    fetchPrayerTimes().then(({ data }) => setPrayerTimes(data));
+    fetchMasjidProfile().then(({ data }) => setProfile(data));
+  }, []);
+
   const prayers = [
-    { name: 'Fajr', time: MOCK_PRAYER_TIMES.fajr, iqamah: '5:45 AM' },
-    { name: 'Dhuhr', time: MOCK_PRAYER_TIMES.dhuhr, iqamah: '1:30 PM' },
-    { name: 'Asr', time: MOCK_PRAYER_TIMES.asr, iqamah: '4:15 PM' },
-    { name: 'Maghrib', time: MOCK_PRAYER_TIMES.maghrib, iqamah: 'Sunset' },
-    { name: 'Isha', time: MOCK_PRAYER_TIMES.isha, iqamah: '8:00 PM' },
-    { name: 'Jumu’ah', time: MOCK_PRAYER_TIMES.jumua, iqamah: '1:15 PM' },
+    { name: 'Fajr', time: '---', iqamah: prayerTimes?.fajr || '--' },
+    { name: 'Dhuhr', time: '1:00 PM', iqamah: prayerTimes?.dhuhr || '--' },
+    { name: 'Asr', time: '---', iqamah: prayerTimes?.asr || '--' },
+    { name: 'Maghrib', time: 'Sunset', iqamah: prayerTimes?.maghrib || '--' },
+    { name: 'Isha', time: '---', iqamah: prayerTimes?.isha || '--' },
+    { name: 'Jumu’ah', time: '1:15 PM', iqamah: prayerTimes?.jumua || '1:15 PM' },
   ];
 
   return (
@@ -41,7 +48,7 @@ const PublicPrayerTimes = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-islamic-pattern">
             {prayers.map((p, i) => (
               <div key={p.name} className={`flex items-center justify-between px-12 py-8 group hover:bg-[#d4af37]/5 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-[#fdfbf7]'} border-b border-[#f0e6d2] last:border-0`}>
@@ -69,32 +76,32 @@ const PublicPrayerTimes = () => {
             <div>
               <h4 className="font-black text-[#042f24] uppercase text-sm tracking-widest mb-2">Notice to Congregants</h4>
               <p className="text-gray-700 leading-relaxed italic">
-                {MOCK_PRAYER_TIMES.notes} Doors open 20 minutes before Fajr and close 30 minutes after Isha. Please maintain silence in the prayer halls.
+                {prayerTimes?.notes || 'Doors open 20 minutes before Fajr and close 30 minutes after Isha. Please maintain silence in the prayer halls.'}
               </p>
             </div>
           </div>
         </div>
-        
+
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-10">
           <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-[#f0e6d2] relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 mihrab-shape -translate-y-1/2 translate-x-1/2"></div>
             <h3 className="text-3xl font-black text-[#042f24] mb-6 italic">Jumu'ah Prayer</h3>
             <p className="text-gray-600 leading-relaxed mb-8">
-              Friday Khutbah starts at 1:15 PM. We recommend arriving early as the hall fills up quickly. 
+              Friday Khutbah starts at 1:15 PM. We recommend arriving early as the hall fills up quickly.
             </p>
             <div className="flex items-center gap-3 text-[#d4af37] font-black text-xl italic">
               <Clock size={24} /> 1:15 PM Khutbah
             </div>
           </div>
           <div className="bg-[#042f24] p-10 rounded-[3rem] shadow-xl text-white relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-islamic-pattern"></div>
-             <h3 className="text-3xl font-black mb-6 italic text-[#d4af37]">Live Updates</h3>
-             <p className="text-white/70 leading-relaxed mb-8">
-               Get real-time iqamah changes and mosque announcements directly on your phone via our WhatsApp group.
-             </p>
-             <button className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg">
-               Join Community Chat
-             </button>
+            <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-islamic-pattern"></div>
+            <h3 className="text-3xl font-black mb-6 italic text-[#d4af37]">Live Updates</h3>
+            <p className="text-white/70 leading-relaxed mb-8">
+              Get real-time iqamah changes and mosque announcements directly on your phone via our WhatsApp group.
+            </p>
+            <button className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg">
+              Join Community Chat
+            </button>
           </div>
         </div>
       </div>

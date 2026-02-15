@@ -1,31 +1,14 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, ArrowRight, Clock } from 'lucide-react';
+import { fetchEvents } from '../services/supabase';
 
 const PublicEvents = () => {
-  const events = [
-    {
-      title: 'Monthly Community Potluck',
-      date: 'Saturday, March 16, 2024',
-      time: '6:30 PM (After Maghrib)',
-      location: 'Masjid Social Hall',
-      desc: 'Join us for an evening of brotherhood and delicious food. Please bring a dish to share!'
-    },
-    {
-      title: 'Seerah Lecture Series',
-      date: 'Every Sunday',
-      time: 'After Dhuhr Prayer',
-      location: 'Main Prayer Hall',
-      desc: 'Weekly lectures diving deep into the life and teachings of the Prophet Muhammad (PBUH).'
-    },
-    {
-      title: 'Youth Basketball Tournament',
-      date: 'March 23-24, 2024',
-      time: '10:00 AM - 4:00 PM',
-      location: 'Local Community Center',
-      desc: 'Annual sports event for the youth of our community. Registration required.'
-    }
-  ];
+  const [events, setEvents] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchEvents().then(({ data }) => setEvents(data || []));
+  }, []);
 
   return (
     <div className="bg-white min-h-screen">
@@ -36,7 +19,7 @@ const PublicEvents = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-20">
         <div className="space-y-12">
-          {events.map((e, idx) => (
+          {events.length > 0 ? events.map((e, idx) => (
             <div key={idx} className="bg-gray-50 rounded-[2.5rem] overflow-hidden border border-gray-100 flex flex-col md:flex-row shadow-sm hover:shadow-md transition-shadow">
               <div className="md:w-1/3 bg-emerald-700 p-12 text-white flex flex-col justify-center">
                 <div className="flex items-center gap-2 mb-4 text-emerald-200 uppercase tracking-widest text-xs font-bold">
@@ -44,17 +27,20 @@ const PublicEvents = () => {
                 </div>
                 <h3 className="text-3xl font-bold leading-tight mb-4">{e.title}</h3>
                 <div className="text-emerald-100 font-medium">
-                  {e.date}
+                  {new Date(e.start_time).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </div>
               </div>
               <div className="flex-1 p-12 flex flex-col justify-between">
                 <div>
                   <div className="flex flex-wrap gap-6 mb-8 text-emerald-800 font-semibold">
-                    <span className="flex items-center gap-2"><Clock size={18} /> {e.time}</span>
-                    <span className="flex items-center gap-2"><MapPin size={18} /> {e.location}</span>
+                    <span className="flex items-center gap-2">
+                      <Clock size={18} />
+                      {new Date(e.start_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                    <span className="flex items-center gap-2"><MapPin size={18} /> {e.location || 'Masjid'}</span>
                   </div>
                   <p className="text-gray-600 text-lg leading-relaxed mb-8">
-                    {e.desc}
+                    {e.description}
                   </p>
                 </div>
                 <button className="flex items-center gap-2 text-emerald-700 font-bold hover:underline">
@@ -62,7 +48,12 @@ const PublicEvents = () => {
                 </button>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="text-center py-20 bg-gray-50 rounded-[3rem]">
+              <h3 className="text-2xl font-bold text-gray-400">No Upcoming Events</h3>
+              <p className="text-gray-400 mt-2">Check back soon for updates.</p>
+            </div>
+          )}
         </div>
 
         <div className="mt-20 pt-20 border-t border-gray-100">
