@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jamiatul-haq.org/sitemap.xml

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Clock, Calendar, ArrowRight, Heart, Loader2, ImageIcon, Megaphone, Sparkles, Pin, Moon } from 'lucide-react';
 import { supabase, MOCK_PROFILE, MOCK_PRAYER_TIMES } from '../services/supabase';
 import { MasjidProfile, PrayerTimes, Event } from '../types';
+import SEO from '../components/SEO';
 
 const PublicHome = () => {
   const [profile, setProfile] = useState<any>(null);
@@ -26,7 +27,7 @@ const PublicHome = () => {
         setPrayerTimes(prayRes.data || MOCK_PRAYER_TIMES);
         if (eventRes.data) setEvents(eventRes.data);
         if (newsRes.data) setLatestNews(newsRes.data);
-        
+
       } catch (err) {
         console.error("Supabase error, using fallbacks:", err);
         setProfile(MOCK_PROFILE);
@@ -48,10 +49,45 @@ const PublicHome = () => {
 
   return (
     <div className="flex flex-col gap-0">
+      <SEO
+        title="Home"
+        description={`Welcome to ${profile?.common_name || 'Jamiatul Haq'}, a beacon of faith and service in Franklin Township, NJ. Join us for daily prayers, community events, and spiritual growth.`}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "Mosque",
+          "name": profile?.common_name || "Jamiatul Haq",
+          "alternateName": profile?.official_name,
+          "url": "https://jamiatul-haq.org",
+          "logo": "https://jamiatul-haq.org/logo.png",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": profile?.address || "385 Lewis Street",
+            "addressLocality": "Somerset",
+            "addressRegion": "NJ",
+            "postalCode": "08873",
+            "addressCountry": "US"
+          },
+          "telephone": profile?.phone || "+1-732-322-5221",
+          "email": profile?.email || "aksavage68@gmail.com",
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "40.4868",
+            "longitude": "-74.4815"
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+              "opens": "05:00",
+              "closes": "22:00"
+            }
+          ]
+        }}
+      />
       {/* Hero Section */}
       <section className="relative min-h-[90vh] flex items-center justify-center text-white overflow-hidden bg-[#042f24]">
-        <img 
-          src="https://images.unsplash.com/photo-1542640244-7e672d6cef21?auto=format&fit=crop&q=80&w=2070" 
+        <img
+          src="https://images.unsplash.com/photo-1542640244-7e672d6cef21?auto=format&fit=crop&q=80&w=2070"
           className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-multiply"
           alt="Islamic Society of Franklin Township"
         />
@@ -81,20 +117,20 @@ const PublicHome = () => {
 
       {/* Ramadan Special CTA */}
       <section className="bg-emerald-950 py-16 border-b-4 border-[#d4af37]">
-         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-6">
-               <div className="p-4 bg-[#d4af37] text-[#042f24] rounded-3xl shadow-sacred">
-                  <Moon size={40} fill="currentColor" />
-               </div>
-               <div>
-                  <h2 className="text-3xl font-black text-white italic">Ramadan is Approaching</h2>
-                  <p className="text-[#d4af37] font-bold italic">Check the Iftar schedule and sponsorship opportunities.</p>
-               </div>
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-6">
+            <div className="p-4 bg-[#d4af37] text-[#042f24] rounded-3xl shadow-sacred">
+              <Moon size={40} fill="currentColor" />
             </div>
-            <Link to="/ramadan" className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-white transition-all shadow-2xl">
-               Enter Ramadan Portal
-            </Link>
-         </div>
+            <div>
+              <h2 className="text-3xl font-black text-white italic">Ramadan is Approaching</h2>
+              <p className="text-[#d4af37] font-bold italic">Check the Iftar schedule and sponsorship opportunities.</p>
+            </div>
+          </div>
+          <Link to="/ramadan" className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-white transition-all shadow-2xl">
+            Enter Ramadan Portal
+          </Link>
+        </div>
       </section>
 
       {/* News & Announcements Bar / Section */}
@@ -111,12 +147,11 @@ const PublicHome = () => {
                 Read All Updates <ArrowRight size={18} />
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               {latestNews.map((news) => (
-                <Link to="/announcements" key={news.id} className={`group bg-white/5 backdrop-blur-md p-10 rounded-[3.5rem] border-2 transition-all hover:bg-white/10 ${
-                  news.is_pinned ? 'border-[#d4af37]' : 'border-white/10'
-                }`}>
+                <Link to="/announcements" key={news.id} className={`group bg-white/5 backdrop-blur-md p-10 rounded-[3.5rem] border-2 transition-all hover:bg-white/10 ${news.is_pinned ? 'border-[#d4af37]' : 'border-white/10'
+                  }`}>
                   <div className="flex justify-between items-start mb-6">
                     <span className="bg-[#d4af37] text-[#042f24] px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg">
                       {news.type === 'Ramadan' ? <Sparkles size={12} /> : news.is_pinned ? <Pin size={12} /> : <Megaphone size={12} />}
@@ -166,11 +201,11 @@ const PublicHome = () => {
         <div className="max-w-7xl mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-16 gap-6">
             <div className="text-center md:text-left">
-               <span className="text-[#d4af37] font-black uppercase tracking-[0.4em] text-[10px] block mb-4">Community</span>
-               <h2 className="text-4xl md:text-7xl font-black italic">Upcoming Programs</h2>
+              <span className="text-[#d4af37] font-black uppercase tracking-[0.4em] text-[10px] block mb-4">Community</span>
+              <h2 className="text-4xl md:text-7xl font-black italic">Upcoming Programs</h2>
             </div>
             <Link to="/events" className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black flex items-center gap-2 hover:bg-white transition-all uppercase text-xs tracking-widest shadow-2xl">
-               See All Events <ArrowRight size={18} />
+              See All Events <ArrowRight size={18} />
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -186,7 +221,7 @@ const PublicHome = () => {
                 </div>
               ))
             ) : (
-              [1,2,3].map(i => (
+              [1, 2, 3].map(i => (
                 <div key={i} className="bg-white/5 backdrop-blur-sm border-t-8 border-white/10 p-12 rounded-b-[4rem] opacity-40">
                   <div className="h-6 w-3/4 bg-white/10 rounded mb-4"></div>
                   <div className="h-4 w-full bg-white/10 rounded mb-2"></div>

@@ -8,7 +8,7 @@ const AdminProfile = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  
+
   const [profile, setProfile] = useState({
     id: '',
     official_name: '',
@@ -47,18 +47,18 @@ const AdminProfile = () => {
         .from('masjid_profile')
         .select('*')
         .maybeSingle();
-      
+
       const { data: pray, error: prayErr } = await supabase
         .from('prayer_times_weekly')
         .select('*')
         .maybeSingle();
-      
+
       if (prof) {
         setProfile(prof);
         if (prof.facilities_image_url) setImagePreview(prof.facilities_image_url);
       }
       if (pray) setPrayers(pray);
-      
+
       if (profErr && profErr.code !== 'PGRST116') {
         console.error("Profile fetch error:", profErr);
         setError(profErr.message);
@@ -75,7 +75,7 @@ const AdminProfile = () => {
       const file = e.target.files[0];
       setUploadingImage(true);
       setError(null);
-      
+
       try {
         const fileExt = file.name.split('.').pop();
         const fileName = `facilities-${Date.now()}.${fileExt}`;
@@ -105,14 +105,14 @@ const AdminProfile = () => {
     e.preventDefault();
     setSaving(true);
     setError(null);
-    
+
     try {
       // Create a clean copy of profile data
       const { id, updated_at, ...cleanProfile } = profile as any;
       const profileToSave = id ? { id, ...cleanProfile } : cleanProfile;
 
       const { error: profError } = await supabase.from('masjid_profile').upsert(profileToSave);
-      
+
       if (profError) {
         if (profError.message.includes('facilities_image_url')) {
           throw new Error("SCHEMA MISMATCH: Please run the SQL script in your Supabase dashboard to add the 'facilities_image_url' column.");
@@ -153,7 +153,7 @@ const AdminProfile = () => {
           <h1 className="text-4xl font-black text-[#042f24] italic tracking-tight">Masjid Settings</h1>
           <p className="text-slate-500 font-medium">Core identity and facilities management.</p>
         </div>
-        <button 
+        <button
           onClick={handleSave}
           disabled={saving}
           className="bg-[#042f24] text-[#d4af37] px-10 py-5 rounded-full font-black flex items-center gap-3 hover:bg-[#d4af37] hover:text-[#042f24] transition-all shadow-2xl uppercase text-xs tracking-widest disabled:opacity-50"
@@ -198,35 +198,35 @@ const AdminProfile = () => {
               </div>
               <h2 className="text-xl font-black uppercase tracking-widest">General Info</h2>
             </div>
-            
+
             <div className="space-y-8">
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Common Name</label>
-                <input 
-                  value={profile.common_name} 
-                  onChange={e => setProfile({...profile, common_name: e.target.value})} 
+                <input
+                  value={profile.common_name}
+                  onChange={e => setProfile({ ...profile, common_name: e.target.value })}
                   className={inputClasses}
                   placeholder="e.g. Jamiatul Haq"
                 />
               </div>
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Primary Address</label>
-                <input 
-                  value={profile.address} 
-                  onChange={e => setProfile({...profile, address: e.target.value})} 
+                <input
+                  value={profile.address}
+                  onChange={e => setProfile({ ...profile, address: e.target.value })}
                   className={inputClasses}
                   placeholder="Street, City, State, Zip"
                 />
               </div>
-              
+
               <div className="pt-4 border-t-2 border-slate-50">
                 <div className="flex items-center gap-2 mb-4">
                   <Share2 size={16} className="text-[#d4af37]" />
                   <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#042f24]">WhatsApp Community Link</label>
                 </div>
-                <input 
-                  value={profile.whatsapp_link || ''} 
-                  onChange={e => setProfile({...profile, whatsapp_link: e.target.value})} 
+                <input
+                  value={profile.whatsapp_link || ''}
+                  onChange={e => setProfile({ ...profile, whatsapp_link: e.target.value })}
                   className={`${inputClasses} border-[#d4af37]/20`}
                   placeholder="https://chat.whatsapp.com/..."
                 />
@@ -242,7 +242,7 @@ const AdminProfile = () => {
               </div>
               <h2 className="text-xl font-black uppercase tracking-widest">Facilities Section</h2>
             </div>
-            
+
             <div className="space-y-8">
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Facilities Photo</label>
@@ -252,7 +252,7 @@ const AdminProfile = () => {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
                       <ImageIcon size={48} className="mb-2" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-center px-4">No Custom Photo<br/>(Using Default)</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-center px-4">No Custom Photo<br />(Using Default)</span>
                     </div>
                   )}
                   {uploadingImage && (
@@ -261,14 +261,14 @@ const AdminProfile = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex gap-4">
                   <input type="file" id="facilities-upload" className="hidden" accept="image/*" onChange={handleImageUpload} />
                   <label htmlFor="facilities-upload" className="flex-1 bg-[#042f24] text-white py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] text-center cursor-pointer hover:bg-[#d4af37] transition-all flex items-center justify-center gap-2">
                     <Upload size={16} /> {imagePreview ? 'Change Photo' : 'Upload Custom Photo'}
                   </label>
                   {imagePreview && (
-                    <button onClick={() => { setImagePreview(null); setProfile({...profile, facilities_image_url: ''}); }} className="bg-red-50 text-red-500 p-4 rounded-2xl hover:bg-red-500 hover:text-white transition-all">
+                    <button onClick={() => { setImagePreview(null); setProfile({ ...profile, facilities_image_url: '' }); }} className="bg-red-50 text-red-500 p-4 rounded-2xl hover:bg-red-500 hover:text-white transition-all">
                       <X size={20} />
                     </button>
                   )}
@@ -279,9 +279,9 @@ const AdminProfile = () => {
                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-[#d4af37] mb-3 flex items-center gap-2">
                   <List size={14} /> Facilities Bullet Points
                 </label>
-                <textarea 
+                <textarea
                   value={profile.facilities_list}
-                  onChange={e => setProfile({...profile, facilities_list: e.target.value})}
+                  onChange={e => setProfile({ ...profile, facilities_list: e.target.value })}
                   className={`${inputClasses} h-24 resize-none`}
                   placeholder="e.g. Ample Parking, Library, Sisters Hall..."
                 />
@@ -294,7 +294,7 @@ const AdminProfile = () => {
         {/* Prayer Card (Secondary Settings) */}
         <div className="bg-[#042f24] p-12 rounded-[3.5rem] shadow-2xl text-white relative border-4 border-[#064e3b] h-fit">
           <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 mihrab-shape -rotate-12 translate-x-1/4 -translate-y-1/4"></div>
-          
+
           <div className="flex items-center gap-4 mb-10 text-[#d4af37] relative z-10">
             <div className="p-3 bg-white/5 rounded-2xl">
               <Clock size={28} />
@@ -306,11 +306,11 @@ const AdminProfile = () => {
             {['fajr', 'dhuhr', 'asr', 'maghrib', 'isha', 'jumua'].map(p => (
               <div key={p}>
                 <label className="block text-[10px] font-black uppercase text-white/40 mb-3 tracking-[0.2em]">{p}</label>
-                <input 
-                  value={(prayers as any)[p]} 
-                  onChange={e => setPrayers({...prayers, [p]: e.target.value})} 
+                <input
+                  value={(prayers as any)[p]}
+                  onChange={e => setPrayers({ ...prayers, [p]: e.target.value })}
                   placeholder="e.g. 5:15 AM"
-                  className={darkInputClasses} 
+                  className={darkInputClasses}
                 />
               </div>
             ))}
@@ -318,12 +318,84 @@ const AdminProfile = () => {
 
           <div className="mt-10 relative z-10">
             <label className="block text-[10px] font-black uppercase text-white/40 mb-3 tracking-[0.2em]">Schedule Notes</label>
-            <textarea 
-              value={prayers.notes} 
-              onChange={e => setPrayers({...prayers, notes: e.target.value})}
+            <textarea
+              value={prayers.notes}
+              onChange={e => setPrayers({ ...prayers, notes: e.target.value })}
               className={`${darkInputClasses} h-32 resize-none font-medium text-white/80`}
               placeholder="Iqamah times, Jumu'ah details..."
             />
+          </div>
+        </div>
+
+        {/* Donation Settings Card */}
+        <div className="bg-white p-12 rounded-[3.5rem] border-2 border-[#f0e6d2] shadow-sm relative overflow-hidden lg:col-span-2">
+          <div className="flex items-center gap-4 mb-10 text-[#d4af37]">
+            <div className="p-3 bg-slate-50 rounded-2xl">
+              <Landmark size={28} />
+            </div>
+            <h2 className="text-xl font-black uppercase tracking-widest">Donation Links</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">PayPal Link</label>
+              <input
+                value={(profile as any).paypal_link || ''}
+                onChange={e => setProfile({ ...profile, paypal_link: e.target.value } as any)}
+                className={inputClasses}
+                placeholder="https://paypal.me/..."
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Zelle (Email/Phone)</label>
+              <input
+                value={(profile as any).zelle_contact || ''}
+                onChange={e => setProfile({ ...profile, zelle_contact: e.target.value } as any)}
+                className={inputClasses}
+                placeholder="admin@jamiatul-haq.org"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">LaunchGood Link</label>
+              <input
+                value={(profile as any).launchgood_link || ''}
+                onChange={e => setProfile({ ...profile, launchgood_link: e.target.value } as any)}
+                className={inputClasses}
+                placeholder="https://launchgood.com/..."
+              />
+            </div>
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-slate-50">
+              <div className="md:col-span-3 mb-2">
+                <h4 className="text-sm font-black text-[#042f24] uppercase tracking-widest">Bank Transfer Details</h4>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Bank Name</label>
+                <input
+                  value={(profile as any).bank_name || ''}
+                  onChange={e => setProfile({ ...profile, bank_name: e.target.value } as any)}
+                  className={inputClasses}
+                  placeholder="e.g. Chase Bank"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Account Number</label>
+                <input
+                  value={(profile as any).account_number || ''}
+                  onChange={e => setProfile({ ...profile, account_number: e.target.value } as any)}
+                  className={inputClasses}
+                  placeholder="000000000"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Routing Number</label>
+                <input
+                  value={(profile as any).routing_number || ''}
+                  onChange={e => setProfile({ ...profile, routing_number: e.target.value } as any)}
+                  className={inputClasses}
+                  placeholder="000000000"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

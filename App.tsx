@@ -16,6 +16,7 @@ import PublicServices from './pages/PublicServices';
 import PublicLeadership from './pages/PublicLeadership';
 import PublicAnnouncements from './pages/PublicAnnouncements';
 import PublicRamadan from './pages/PublicRamadan';
+import PublicDonate from './pages/PublicDonate';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminEvents from './pages/admin/AdminEvents';
@@ -71,8 +72,20 @@ const Navbar = ({ profile }: { profile?: any }) => {
                 {link.name}
               </Link>
             ))}
+            <Link
+              to="/donate"
+              className="bg-[#d4af37] text-[#042f24] px-6 py-3 rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-white transition-all shadow-lg hover:translate-y-[-2px]"
+            >
+              Donate
+            </Link>
           </div>
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-4">
+            <Link
+              to="/donate"
+              className="bg-[#d4af37] text-[#042f24] px-4 py-2 rounded-full font-black uppercase tracking-widest text-[9px] hover:bg-white transition-all"
+            >
+              Donate
+            </Link>
             <button onClick={() => setIsOpen(!isOpen)} className="text-[#d4af37] focus:outline-none">
               {isOpen ? <X size={32} /> : <Menu size={32} />}
             </button>
@@ -92,6 +105,13 @@ const Navbar = ({ profile }: { profile?: any }) => {
                 {link.name}
               </Link>
             ))}
+            <Link
+              to="/donate"
+              onClick={() => setIsOpen(false)}
+              className="block py-4 text-xl font-black italic text-white bg-[#d4af37]/20 rounded-xl"
+            >
+              Donate
+            </Link>
 
           </div>
         </div>
@@ -322,6 +342,7 @@ const App: React.FC = () => {
           <Route path="/gallery/:slug" element={<PublicAlbumDetail />} />
           <Route path="/services" element={<PublicServices />} />
           <Route path="/leadership" element={<PublicLeadership />} />
+          <Route path="/donate" element={<PublicDonate />} />
           <Route path="/contact" element={<PublicContact />} />
 
           <Route path="/admin/login" element={<AdminLogin />} />

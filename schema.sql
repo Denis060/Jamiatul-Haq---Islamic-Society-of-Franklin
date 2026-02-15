@@ -12,6 +12,12 @@ CREATE TABLE IF NOT EXISTS masjid_profile (
   whatsapp_link TEXT,
   facilities_image_url TEXT,
   facilities_list TEXT DEFAULT 'Ample Parking, Dedicated Wudu Area, Sisters Prayer Hall, Islamic Library',
+  paypal_link TEXT,
+  zelle_contact TEXT,
+  bank_name TEXT,
+  account_number TEXT,
+  routing_number TEXT,
+  launchgood_link TEXT,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -25,6 +31,25 @@ DO $$ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'masjid_profile'::regclass AND attname = 'facilities_list') THEN
     ALTER TABLE masjid_profile ADD COLUMN facilities_list TEXT DEFAULT 'Ample Parking, Dedicated Wudu Area, Sisters Prayer Hall, Islamic Library';
+  END IF;
+  -- Donation Fields
+  IF NOT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'masjid_profile'::regclass AND attname = 'paypal_link') THEN
+    ALTER TABLE masjid_profile ADD COLUMN paypal_link TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'masjid_profile'::regclass AND attname = 'zelle_contact') THEN
+    ALTER TABLE masjid_profile ADD COLUMN zelle_contact TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'masjid_profile'::regclass AND attname = 'bank_name') THEN
+    ALTER TABLE masjid_profile ADD COLUMN bank_name TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'masjid_profile'::regclass AND attname = 'account_number') THEN
+    ALTER TABLE masjid_profile ADD COLUMN account_number TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'masjid_profile'::regclass AND attname = 'routing_number') THEN
+    ALTER TABLE masjid_profile ADD COLUMN routing_number TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_attribute WHERE attrelid = 'masjid_profile'::regclass AND attname = 'launchgood_link') THEN
+    ALTER TABLE masjid_profile ADD COLUMN launchgood_link TEXT;
   END IF;
 END $$;
 

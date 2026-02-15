@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../services/supabase';
+import SEO from '../components/SEO';
 
 const PublicContact = () => {
   const [formData, setFormData] = useState({
@@ -49,6 +50,10 @@ const PublicContact = () => {
 
   return (
     <div className="bg-white">
+      <SEO
+        title="Contact Us"
+        description="Get in touch with Jamiatul Haq. Find our address, phone number, and email. We are located at 385 Lewis Street, Somerset, NJ."
+      />
       <div className="bg-[#042f24] py-32 px-4 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-5 bg-islamic-pattern"></div>
         <h1 className="text-5xl md:text-7xl font-black text-white italic mb-6">Get In Touch</h1>
@@ -93,12 +98,12 @@ const PublicContact = () => {
             </div>
 
             <div className="rounded-[3rem] overflow-hidden shadow-2xl border-4 border-[#f0e6d2] h-96">
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3032.544155169993!2d-74.48154672343465!3d40.48681555146524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c3c1374526017b%3A0x64e32080a2947683!2s385%20Lewis%20St%2C%20Somerset%2C%20NJ%2008873!5e0!3m2!1sen!2sus!4v1711130635198!5m2!1sen!2sus" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen={true} 
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3032.544155169993!2d-74.48154672343465!3d40.48681555146524!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c3c1374526017b%3A0x64e32080a2947683!2s385%20Lewis%20St%2C%20Somerset%2C%20NJ%2008873!5e0!3m2!1sen!2sus!4v1711130635198!5m2!1sen!2sus"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={true}
                 loading="lazy"
                 title="Masjid Location Map"
               ></iframe>
@@ -107,8 +112,8 @@ const PublicContact = () => {
 
           {/* Contact Form */}
           <div className="bg-[#fdfbf7] p-12 lg:p-16 rounded-[4rem] border-2 border-[#f0e6d2] shadow-sm relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-48 h-48 bg-[#d4af37]/5 mihrab-shape translate-x-1/2 -translate-y-1/2"></div>
-            
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#d4af37]/5 mihrab-shape translate-x-1/2 -translate-y-1/2"></div>
+
             {submitted ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-20 animate-in zoom-in-95 duration-500">
                 <div className="bg-[#042f24] p-8 rounded-full mb-8 shadow-2xl">
@@ -116,7 +121,7 @@ const PublicContact = () => {
                 </div>
                 <h2 className="text-4xl font-black text-[#042f24] italic mb-4">Message Sent!</h2>
                 <p className="text-slate-500 text-lg mb-10 italic">Thank you for reaching out. Our team will get back to you shortly, Insha'Allah.</p>
-                <button 
+                <button
                   onClick={() => setSubmitted(false)}
                   className="bg-[#042f24] text-[#d4af37] px-12 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-[#d4af37] hover:text-[#042f24] transition-all"
                 >
@@ -132,56 +137,56 @@ const PublicContact = () => {
                       {error}
                     </div>
                   )}
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Full Name</label>
-                      <input 
+                      <input
                         required
                         autoComplete="off"
                         value={formData.full_name}
-                        onChange={e => setFormData({...formData, full_name: e.target.value})}
-                        className={inputStyles} 
+                        onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                        className={inputStyles}
                         placeholder="John Doe"
                       />
                     </div>
                     <div>
                       <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Email</label>
-                      <input 
+                      <input
                         required
                         type="email"
                         autoComplete="off"
                         value={formData.email}
-                        onChange={e => setFormData({...formData, email: e.target.value})}
-                        className={inputStyles} 
+                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                        className={inputStyles}
                         placeholder="john@example.com"
                       />
                     </div>
                   </div>
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Phone Number</label>
-                    <input 
+                    <input
                       type="tel"
                       autoComplete="off"
                       value={formData.phone}
-                      onChange={e => setFormData({...formData, phone: e.target.value})}
-                      className={inputStyles} 
+                      onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                      className={inputStyles}
                       placeholder="732-000-0000"
                     />
                   </div>
                   <div>
                     <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Message</label>
-                    <textarea 
+                    <textarea
                       required
                       rows={6}
                       autoComplete="off"
                       value={formData.message}
-                      onChange={e => setFormData({...formData, message: e.target.value})}
+                      onChange={e => setFormData({ ...formData, message: e.target.value })}
                       className={`${inputStyles} h-40 resize-none font-medium text-slate-600 italic`}
                       placeholder="How can we help you?"
                     ></textarea>
                   </div>
-                  <button 
+                  <button
                     disabled={loading}
                     className="w-full bg-[#042f24] text-[#d4af37] font-black py-6 rounded-full shadow-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all flex items-center justify-center gap-4 uppercase text-xs tracking-[0.3em] disabled:opacity-50"
                   >

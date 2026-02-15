@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, ArrowRight, Clock, Loader2, ImageIcon } from 'lucide-react';
 import { fetchEvents } from '../services/supabase';
 import { Event } from '../types';
+import SEO from '../components/SEO';
 
 const PublicEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -24,6 +25,10 @@ const PublicEvents = () => {
 
   return (
     <div className="bg-[#fdfbf7] min-h-screen pb-32">
+      <SEO
+        title="Community Events"
+        description="Join Jamiatul Haq for upcoming Islamic events, lectures, and community gatherings in Franklin Township, NJ."
+      />
       <div className="bg-[#042f24] pt-32 pb-48 px-4 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-islamic-pattern"></div>
         <div className="relative z-10">
