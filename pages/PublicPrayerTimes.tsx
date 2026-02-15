@@ -46,7 +46,7 @@ const PublicPrayerTimes = () => {
   return (
     <div className="bg-[#fdfbf7] min-h-screen pb-32">
       <div className="bg-[#042f24] pt-32 pb-48 px-4 text-center relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 bg-islamic-pattern"></div>
+        <div className="absolute inset-0 opacity-5 bg-islamic-pattern pointer-events-none"></div>
         <div className="relative z-10">
           <h1 className="text-5xl md:text-7xl font-black text-white italic mb-6">Congregational Prayers</h1>
           <p className="text-[#d4af37] max-w-2xl mx-auto text-xl font-medium tracking-wide">Timely schedules for your daily spiritual duties at Jamiatul Haq.</p>
@@ -104,38 +104,42 @@ const PublicPrayerTimes = () => {
         
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-10">
           <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-[#f0e6d2] relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 mihrab-shape -translate-y-1/2 translate-x-1/2"></div>
-            <h3 className="text-3xl font-black text-[#042f24] mb-6 italic">Jumu'ah Prayer</h3>
-            <p className="text-gray-600 leading-relaxed mb-8">
-              Friday Khutbah starts at {prayers.jumua || "1:15 PM"}. We recommend arriving early as the hall fills up quickly. 
-            </p>
-            <div className="flex items-center gap-3 text-[#d4af37] font-black text-xl italic">
-              <Clock size={24} /> {prayers.jumua || "1:15 PM"} Khutbah
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 mihrab-shape -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+            <div className="relative z-10">
+              <h3 className="text-3xl font-black text-[#042f24] mb-6 italic">Jumu'ah Prayer</h3>
+              <p className="text-gray-600 leading-relaxed mb-8">
+                Friday Khutbah starts at {prayers.jumua || "1:15 PM"}. We recommend arriving early as the hall fills up quickly. 
+              </p>
+              <div className="flex items-center gap-3 text-[#d4af37] font-black text-xl italic">
+                <Clock size={24} /> {prayers.jumua || "1:15 PM"} Khutbah
+              </div>
             </div>
           </div>
           <div className="bg-[#042f24] p-10 rounded-[3rem] shadow-xl text-white relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-islamic-pattern"></div>
-             <h3 className="text-3xl font-black mb-6 italic text-[#d4af37]">Mosque Updates</h3>
-             <p className="text-white/70 leading-relaxed mb-8">
-               Get real-time iqamah changes and mosque announcements directly on your phone via our WhatsApp community.
-             </p>
-             {profile?.whatsapp_link ? (
-               <a 
-                 href={profile.whatsapp_link} 
-                 target="_blank" 
-                 rel="noopener noreferrer"
-                 className="inline-block bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg"
-               >
-                 Join Community Group
-               </a>
-             ) : (
-               <button 
-                 disabled
-                 className="bg-white/10 text-white/30 px-10 py-4 rounded-full font-black uppercase text-sm tracking-widest cursor-not-allowed border border-white/10"
-               >
-                 Link Coming Soon
-               </button>
-             )}
+             <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-islamic-pattern pointer-events-none"></div>
+             <div className="relative z-10">
+               <h3 className="text-3xl font-black mb-6 italic text-[#d4af37]">Mosque Updates</h3>
+               <p className="text-white/70 leading-relaxed mb-8">
+                 Get real-time iqamah changes and mosque announcements directly on your phone via our WhatsApp community.
+               </p>
+               {profile?.whatsapp_link ? (
+                 <a 
+                   href={profile.whatsapp_link} 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="inline-block bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg"
+                 >
+                   Join Community Group
+                 </a>
+               ) : (
+                 <button 
+                   disabled
+                   className="bg-white/10 text-white/30 px-10 py-4 rounded-full font-black uppercase text-sm tracking-widest cursor-not-allowed border border-white/10"
+                 >
+                   Link Coming Soon
+                 </button>
+               )}
+             </div>
           </div>
         </div>
       </div>

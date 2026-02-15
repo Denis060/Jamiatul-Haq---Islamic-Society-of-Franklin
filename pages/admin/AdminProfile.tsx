@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { Save, Loader2, Landmark, Clock, Share2 } from 'lucide-react';
+import { Save, Loader2, Landmark, Clock, Share2, AlertCircle } from 'lucide-react';
 
 const AdminProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const [profile, setProfile] = useState({
     official_name: '',
@@ -34,11 +35,27 @@ const AdminProfile = () => {
 
   const fetchData = async () => {
     try {
-      const { data: prof } = await supabase.from('masjid_profile').select('*').single();
-      const { data: pray } = await supabase.from('prayer_times_weekly').select('*').single();
+      setError(null);
+      // Explicitly select columns to avoid "*" issues with cache
+      const { data: prof, error: profErr } = await supabase
+        .from('masjid_profile')
+        .select('id, official_name, common_name, address, imam_name, phone, email, jumua_time, whatsapp_link')
+        .maybeSingle();
+      
+      const { data: pray, error: prayErr } = await supabase
+        .from('prayer_times_weekly')
+        .select('*')
+        .maybeSingle();
       
       if (prof) setProfile(prof);
       if (pray) setPrayers(pray);
+      
+      if (profErr && profErr.code !== 'PGRST116') {
+        console.error("Profile fetch error:", profErr);
+        if (profErr.message.includes('whatsapp_link')) {
+          setError("Database Schema Mismatch: The 'whatsapp_link' column is missing. Please run the SQL in schema.sql.");
+        }
+      }
     } catch (err) {
       console.error("Error fetching profile data:", err);
     } finally {
@@ -49,20 +66,30 @@ const AdminProfile = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError(null);
     
     try {
+      // Prepare data for saving
+      const profileData: any = { ...profile };
+      
       // Upsert Profile
-      const { error: profError } = await supabase.from('masjid_profile').upsert({ id: (profile as any).id, ...profile });
-      if (profError) throw profError;
+      const { error: profError } = await supabase.from('masjid_profile').upsert(profileData);
+      if (profError) {
+        if (profError.message.includes('whatsapp_link')) {
+          throw new Error("The 'whatsapp_link' column was not found in your database. Please run the updated SQL in the 'schema.sql' file to fix this.");
+        }
+        throw profError;
+      }
 
       // Upsert Prayers
-      const { error: prayError } = await supabase.from('prayer_times_weekly').upsert({ id: (prayers as any).id, ...prayers });
+      const { error: prayError } = await supabase.from('prayer_times_weekly').upsert(prayers);
       if (prayError) throw prayError;
 
       alert('Settings updated successfully, Bismillah!');
-    } catch (err) {
+      fetchData(); // Refresh to get the latest IDs
+    } catch (err: any) {
       console.error(err);
-      alert('Error saving changes. Please check your connection.');
+      setError(err.message || 'Error saving changes. Please check your connection.');
     } finally {
       setSaving(false);
     }
@@ -94,6 +121,16 @@ const AdminProfile = () => {
           Save All Changes
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border-2 border-red-100 p-6 rounded-[2rem] text-red-700 flex items-start gap-4 shadow-sm animate-in fade-in duration-300">
+          <AlertCircle className="shrink-0 mt-1" size={24} />
+          <div>
+            <h4 className="font-black uppercase text-xs tracking-widest mb-1">Configuration Required</h4>
+            <p className="text-sm font-medium italic leading-relaxed">{error}</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Profile Card */}
