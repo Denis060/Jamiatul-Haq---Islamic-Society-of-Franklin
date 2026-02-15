@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { 
   Home, MapPin, Clock, Calendar, Image as ImageIcon, LayoutDashboard, LogOut, Settings, 
-  Bell, Mail, Landmark, Users, Menu, X, Heart, MessageSquare, Briefcase, Megaphone, Moon
+  Bell, Mail, Landmark, Users, Menu, X, Heart, MessageSquare, Briefcase, Megaphone, Moon, Phone
 } from 'lucide-react';
 import PublicHome from './pages/PublicHome';
 import PublicPrayerTimes from './pages/PublicPrayerTimes';
@@ -26,7 +26,7 @@ import AdminServices from './pages/admin/AdminServices';
 import AdminLeadership from './pages/admin/AdminLeadership';
 import AdminAnnouncements from './pages/admin/AdminAnnouncements';
 import AdminRamadan from './pages/admin/AdminRamadan';
-import { supabase } from './services/supabase';
+import { supabase, MOCK_PROFILE } from './services/supabase';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -92,11 +92,118 @@ const Navbar = () => {
 };
 
 const Footer = () => {
+  const [profile, setProfile] = useState<any>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    supabase.from('masjid_profile').select('*').single().then(({ data }) => {
+      setProfile(data || MOCK_PROFILE);
+    });
+  }, []);
+
   if (location.pathname.startsWith('/admin')) return null;
+
   return (
-    <footer className="bg-[#021f18] text-white border-t-4 border-[#d4af37] py-12 text-center">
-      <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">© {new Date().getFullYear()} Jamiatul Haq • Bismillah</p>
+    <footer className="bg-[#021f18] text-white border-t-8 border-[#d4af37] relative overflow-hidden">
+      {/* Decorative background pattern - pointer events none so it doesn't block clicks */}
+      <div className="absolute inset-0 opacity-5 bg-islamic-pattern pointer-events-none"></div>
+      
+      <div className="max-w-7xl mx-auto px-4 py-20 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
+          {/* Brand Column */}
+          <div className="space-y-6">
+            <Link to="/" className="flex flex-col">
+              <span className="text-3xl font-black italic tracking-tighter text-[#d4af37]">Jamiatul Haq</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Islamic Society of Franklin Township</span>
+            </Link>
+            <p className="text-white/50 italic text-sm leading-relaxed max-w-xs">
+              Providing spiritual guidance and community services to Somerset and surrounding areas since 2002.
+            </p>
+            <div className="flex items-start gap-3 text-white/60">
+              <MapPin size={18} className="shrink-0 text-[#d4af37] mt-1" />
+              <span className="text-xs font-medium italic">{profile?.address || '385 Lewis Street, Somerset, NJ 08873'}</span>
+            </div>
+          </div>
+
+          {/* Quick Links Column */}
+          <div>
+            <h4 className="text-[#d4af37] font-black uppercase tracking-widest text-[10px] mb-8 border-l-2 border-[#d4af37] pl-3">Quick Navigation</h4>
+            <ul className="space-y-4">
+              {[
+                { name: 'Home', path: '/' },
+                { name: 'Prayer Times', path: '/prayer-times' },
+                { name: 'Ramadan Hub', path: '/ramadan' },
+                { name: 'Latest News', path: '/announcements' },
+                { name: 'Community Events', path: '/events' },
+                { name: 'Masjid Services', path: '/services' }
+              ].map((link) => (
+                <li key={link.path}>
+                  <Link to={link.path} className="text-sm font-bold text-white/50 hover:text-[#d4af37] transition-all italic flex items-center gap-2 group">
+                    <span className="w-1 h-1 rounded-full bg-[#d4af37]/40 group-hover:w-3 transition-all"></span>
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact Column */}
+          <div>
+            <h4 className="text-[#d4af37] font-black uppercase tracking-widest text-[10px] mb-8 border-l-2 border-[#d4af37] pl-3">Contact Admin</h4>
+            <ul className="space-y-5">
+              <li>
+                <a href={`tel:${profile?.phone}`} className="text-sm font-bold text-white/50 hover:text-[#d4af37] transition-colors italic flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg"><Phone size={14} /></div>
+                  {profile?.phone || '732-322-5221'}
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${profile?.email}`} className="text-sm font-bold text-white/50 hover:text-[#d4af37] transition-colors italic flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg"><Mail size={14} /></div>
+                  {profile?.email || 'aksavage68@gmail.com'}
+                </a>
+              </li>
+              <li className="pt-4">
+                <Link to="/contact" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-white/5 border border-white/10 px-6 py-3 rounded-full hover:bg-[#d4af37] hover:text-[#042f24] transition-all">
+                  Get in Touch
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Community Column */}
+          <div>
+            <h4 className="text-[#d4af37] font-black uppercase tracking-widest text-[10px] mb-8 border-l-2 border-[#d4af37] pl-3">Social Community</h4>
+            <p className="text-white/40 text-xs italic mb-8 leading-relaxed">
+              Join our official WhatsApp group for moon sighting, prayer time changes, and emergency closure alerts.
+            </p>
+            {profile?.whatsapp_link ? (
+              <a 
+                href={profile.whatsapp_link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-[#d4af37] text-[#042f24] px-8 py-4 rounded-full font-black uppercase tracking-widest text-[10px] shadow-2xl hover:bg-white transition-all w-full justify-center"
+              >
+                <MessageSquare size={16} /> WhatsApp Community
+              </a>
+            ) : (
+              <div className="bg-white/5 border border-white/10 text-white/20 p-5 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest italic">
+                WhatsApp Link Coming Soon
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">
+            © {new Date().getFullYear()} Jamiatul Haq • Somerset, NJ
+          </p>
+          <div className="flex gap-8 text-[9px] font-black uppercase tracking-[0.2em] text-white/20">
+             <Link to="/admin/login" className="hover:text-[#d4af37] transition-colors">Admin Login</Link>
+             <span>Bismillah ir-Rahman ir-Rahim</span>
+          </div>
+        </div>
+      </div>
     </footer>
   );
 };
