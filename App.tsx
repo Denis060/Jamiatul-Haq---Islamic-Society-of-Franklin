@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { 
   Home, MapPin, Clock, Calendar, Image as ImageIcon, LayoutDashboard, LogOut, Settings, 
-  Bell, Mail, Landmark, Users, Menu, X, Heart
+  Bell, Mail, Landmark, Users, Menu, X, Heart, MessageSquare
 } from 'lucide-react';
 import PublicHome from './pages/PublicHome';
 import PublicPrayerTimes from './pages/PublicPrayerTimes';
@@ -16,6 +16,7 @@ import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminEvents from './pages/admin/AdminEvents';
 import AdminProfile from './pages/admin/AdminProfile';
+import AdminMessages from './pages/admin/AdminMessages';
 import { supabase } from './services/supabase';
 
 const Navbar = () => {
@@ -92,32 +93,68 @@ const Footer = () => {
 const AuthGuard = ({ children }: { children?: React.ReactNode }) => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
+
+    // Listen for auth changes (login, logout, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
-  if (loading) return null;
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#042f24]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#d4af37]"></div>
+    </div>
+  );
+  
   if (!session) return <Navigate to="/admin/login" replace />;
+  
   return <>{children}</>;
 };
 
 const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/admin/login');
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#fdfbf7]">
       <aside className="w-80 bg-[#042f24] text-white hidden lg:flex flex-col border-r-8 border-[#d4af37]">
-        <div className="p-10 border-b border-white/10">
+        <div className="p-10 border-b border-white/10 text-center">
           <h2 className="text-3xl font-black italic text-[#d4af37]">Portal</h2>
+          <p className="text-[10px] text-white/40 uppercase tracking-widest mt-2 font-black">Management Console</p>
         </div>
         <nav className="flex-1 p-8 space-y-2 font-black uppercase text-[10px] tracking-widest">
-          <Link to="/admin/dashboard" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24]"><LayoutDashboard size={18} /> Dashboard</Link>
-          <Link to="/admin/profile" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24]"><Landmark size={18} /> Masjid Profile</Link>
-          <Link to="/admin/events" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24]"><Calendar size={18} /> Events</Link>
-          <Link to="/admin/announcements" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24]"><Bell size={18} /> News</Link>
-          <Link to="/admin/gallery" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24]"><ImageIcon size={18} /> Albums</Link>
+          <Link to="/admin/dashboard" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><LayoutDashboard size={18} /> Dashboard</Link>
+          <Link to="/admin/messages" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><MessageSquare size={18} /> Inbox</Link>
+          <Link to="/admin/profile" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Landmark size={18} /> Masjid Profile</Link>
+          <Link to="/admin/events" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Calendar size={18} /> Events</Link>
+          <Link to="/admin/announcements" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Bell size={18} /> News</Link>
         </nav>
-        <div className="p-8"><button onClick={() => supabase.auth.signOut()} className="w-full p-4 rounded-2xl bg-red-950/50 text-red-400 font-black hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2"><LogOut size={18} /> Sign Out</button></div>
+        <div className="p-8">
+          <button 
+            onClick={handleSignOut}
+            className="w-full p-4 rounded-2xl bg-red-950/50 text-red-400 font-black hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 group"
+          >
+            <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" /> Sign Out
+          </button>
+        </div>
       </aside>
       <main className="flex-1 overflow-y-auto p-12 bg-islamic-pattern">{children}</main>
     </div>
@@ -130,6 +167,7 @@ const App: React.FC = () => {
       <Navbar />
       <div className="flex-grow">
         <Routes>
+          {/* Public Website Routes */}
           <Route path="/" element={<PublicHome />} />
           <Route path="/prayer-times" element={<PublicPrayerTimes />} />
           <Route path="/events" element={<PublicEvents />} />
@@ -137,10 +175,16 @@ const App: React.FC = () => {
           <Route path="/services" element={<PublicServices />} />
           <Route path="/leadership" element={<PublicLeadership />} />
           <Route path="/contact" element={<PublicContact />} />
+          
+          {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AuthGuard><AdminSidebar><AdminDashboard /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/events" element={<AuthGuard><AdminSidebar><AdminEvents /></AuthGuard>} />
+          <Route path="/admin/messages" element={<AuthGuard><AdminSidebar><AdminMessages /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/events" element={<AuthGuard><AdminSidebar><AdminEvents /></AdminSidebar></AuthGuard>} />
           <Route path="/admin/profile" element={<AuthGuard><AdminSidebar><AdminProfile /></AdminSidebar></AuthGuard>} />
+          
+          {/* Catch-all route redirects back to Home */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <Footer />

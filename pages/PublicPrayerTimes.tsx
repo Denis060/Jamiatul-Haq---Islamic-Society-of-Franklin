@@ -1,19 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase, MOCK_PRAYER_TIMES } from '../services/supabase';
+import { supabase, MOCK_PRAYER_TIMES, MOCK_PROFILE } from '../services/supabase';
 import { Clock, Info, ShieldCheck, Moon, Loader2 } from 'lucide-react';
 
 const PublicPrayerTimes = () => {
   const [prayers, setPrayers] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPrayers = async () => {
-      const { data } = await supabase.from('prayer_times_weekly').select('*').single();
-      setPrayers(data || MOCK_PRAYER_TIMES);
-      setLoading(false);
+    const fetchAllData = async () => {
+      try {
+        const [prayerRes, profileRes] = await Promise.all([
+          supabase.from('prayer_times_weekly').select('*').single(),
+          supabase.from('masjid_profile').select('*').single()
+        ]);
+        
+        setPrayers(prayerRes.data || MOCK_PRAYER_TIMES);
+        setProfile(profileRes.data || MOCK_PROFILE);
+      } catch (err) {
+        setPrayers(MOCK_PRAYER_TIMES);
+        setProfile(MOCK_PROFILE);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchPrayers();
+    fetchAllData();
   }, []);
 
   if (loading) return (
@@ -107,9 +119,23 @@ const PublicPrayerTimes = () => {
              <p className="text-white/70 leading-relaxed mb-8">
                Get real-time iqamah changes and mosque announcements directly on your phone via our WhatsApp community.
              </p>
-             <button className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg">
-               Join Community Group
-             </button>
+             {profile?.whatsapp_link ? (
+               <a 
+                 href={profile.whatsapp_link} 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="inline-block bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg"
+               >
+                 Join Community Group
+               </a>
+             ) : (
+               <button 
+                 disabled
+                 className="bg-white/10 text-white/30 px-10 py-4 rounded-full font-black uppercase text-sm tracking-widest cursor-not-allowed border border-white/10"
+               >
+                 Link Coming Soon
+               </button>
+             )}
           </div>
         </div>
       </div>
