@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import {
   Home, MapPin, Clock, Calendar, Image as ImageIcon, Info, Phone,
   Menu, X, ChevronRight, LayoutDashboard, LogOut, Settings,
-  Bell, Mail, Users, Heart
+  Bell, Mail, Users, Heart, MessageSquare, Landmark
 } from 'lucide-react';
 import PublicHome from './pages/PublicHome';
 import PublicPrayerTimes from './pages/PublicPrayerTimes';
@@ -17,6 +17,7 @@ import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminEvents from './pages/admin/AdminEvents';
 import AdminProfile from './pages/admin/AdminProfile';
+import AdminMessages from './pages/admin/AdminMessages';
 import { supabase } from './services/supabase';
 
 const Navbar = ({ profile }: { profile?: any }) => {
@@ -182,6 +183,17 @@ const AuthGuard = ({ children }: { children?: React.ReactNode }) => {
 };
 
 const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/admin/login');
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[#fdfbf7] overflow-hidden">
       <aside className="w-80 bg-[#042f24] text-white hidden lg:flex flex-col border-r-8 border-[#d4af37]">
@@ -193,6 +205,9 @@ const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
           <Link to="/admin/dashboard" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] font-black transition-all">
             <LayoutDashboard size={22} /> Dashboard
           </Link>
+          <Link to="/admin/messages" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] font-black transition-all">
+            <MessageSquare size={22} /> Messages
+          </Link>
           <Link to="/admin/events" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] font-black transition-all">
             <Calendar size={22} /> Events
           </Link>
@@ -202,9 +217,6 @@ const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
           <Link to="/admin/gallery" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] font-black transition-all">
             <ImageIcon size={22} /> Albums
           </Link>
-          <Link to="/admin/messages" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] font-black transition-all">
-            <Mail size={22} /> Messages
-          </Link>
           <div className="pt-10">
             <Link to="/admin/profile" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] font-black transition-all">
               <Settings size={22} /> Masjid Profile
@@ -213,7 +225,7 @@ const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
         </nav>
         <div className="p-8 border-t border-white/10">
           <button
-            onClick={() => supabase.auth.signOut()}
+            onClick={handleSignOut}
             className="flex items-center justify-center gap-4 p-4 w-full rounded-2xl bg-red-950/50 text-red-400 font-black hover:bg-red-500 hover:text-white transition-all"
           >
             <LogOut size={22} /> Sign Out
@@ -252,10 +264,14 @@ const App: React.FC = () => {
           <Route path="/services" element={<PublicServices />} />
           <Route path="/leadership" element={<PublicLeadership />} />
           <Route path="/contact" element={<PublicContact />} />
+
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AuthGuard><AdminSidebar><AdminDashboard /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/events" element={<AuthGuard><AdminSidebar><AdminEvents /></AuthGuard>} />
+          <Route path="/admin/messages" element={<AuthGuard><AdminSidebar><AdminMessages /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/events" element={<AuthGuard><AdminSidebar><AdminEvents /></AdminSidebar></AuthGuard>} />
           <Route path="/admin/profile" element={<AuthGuard><AdminSidebar><AdminProfile /></AdminSidebar></AuthGuard>} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <Footer profile={masjidProfile} />

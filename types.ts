@@ -3,13 +3,13 @@ export interface MasjidProfile {
   id: string;
   official_name: string;
   common_name: string;
-  established_year: number;
   address: string;
   imam_name: string;
   phone: string;
   email: string;
   jumua_time: string;
-  google_maps_link: string;
+  whatsapp_link?: string;
+  updated_at?: string;
 }
 
 export interface PrayerTimes {
