@@ -61,7 +61,7 @@ const Navbar = ({ profile }: { profile?: any }) => {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-8 lg:space-x-10">
+          <div className="hidden xl:flex items-center space-x-8 lg:space-x-10">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -79,7 +79,7 @@ const Navbar = ({ profile }: { profile?: any }) => {
               Donate
             </Link>
           </div>
-          <div className="md:hidden flex items-center gap-4">
+          <div className="xl:hidden flex items-center gap-4">
             <Link
               to="/donate"
               className="bg-[#d4af37] text-[#042f24] px-4 py-2 rounded-full font-black uppercase tracking-widest text-[9px] hover:bg-white transition-all"
@@ -93,7 +93,7 @@ const Navbar = ({ profile }: { profile?: any }) => {
         </div>
       </div>
       {isOpen && (
-        <div className="md:hidden bg-[#042f24] border-t-2 border-[#d4af37]">
+        <div className="xl:hidden bg-[#042f24] border-t-2 border-[#d4af37]">
           <div className="px-4 pt-6 pb-12 space-y-4 text-center">
             {navLinks.map((link) => (
               <Link

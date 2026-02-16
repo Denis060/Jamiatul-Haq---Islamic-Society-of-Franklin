@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Clock, Calendar, ArrowRight, Heart, Loader2, ImageIcon, Megaphone, Sparkles, Pin, Moon } from 'lucide-react';
+import { MapPin, Clock, Calendar, ArrowRight, Heart, Loader2, ImageIcon, Megaphone, Sparkles, Pin, Moon, Users, GraduationCap, Home, Star, Landmark } from 'lucide-react';
 import { supabase, MOCK_PROFILE, MOCK_PRAYER_TIMES } from '../services/supabase';
 import { MasjidProfile, PrayerTimes, Event } from '../types';
 import SEO from '../components/SEO';
@@ -11,22 +11,27 @@ const PublicHome = () => {
   const [prayerTimes, setPrayerTimes] = useState<any>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [latestNews, setLatestNews] = useState<any[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [hijriDate, setHijriDate] = useState<string>('');
+  const [ramadanDay, setRamadanDay] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadHomeData = async () => {
       try {
-        const [profRes, prayRes, eventRes, newsRes] = await Promise.all([
+        const [profRes, prayRes, eventRes, newsRes, servicesRes] = await Promise.all([
           supabase.from('masjid_profile').select('*').single(),
           supabase.from('prayer_times_weekly').select('*').single(),
           supabase.from('events').select('*').eq('status', 'published').order('start_time', { ascending: true }).limit(3),
-          supabase.from('announcements').select('*').eq('status', 'published').order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(2)
+          supabase.from('announcements').select('*').eq('status', 'published').order('is_pinned', { ascending: false }).order('created_at', { ascending: false }).limit(2),
+          supabase.from('services').select('*').order('sort_order', { ascending: true }).limit(3)
         ]);
 
         setProfile(profRes.data || MOCK_PROFILE);
         setPrayerTimes(prayRes.data || MOCK_PRAYER_TIMES);
         if (eventRes.data) setEvents(eventRes.data);
         if (newsRes.data) setLatestNews(newsRes.data);
+        if (servicesRes.data) setServices(servicesRes.data);
 
       } catch (err) {
         console.error("Supabase error, using fallbacks:", err);
@@ -38,7 +43,40 @@ const PublicHome = () => {
     };
 
     loadHomeData();
+
+    // Calculate Hijri Date
+    try {
+      const date = new Date();
+      const options = { calendar: 'islamic', day: 'numeric', month: 'long', year: 'numeric' };
+      // @ts-ignore - 'islamic' calendar is supported in modern browsers but TS might complain
+      const hijri = new Intl.DateTimeFormat('en-US-u-ca-islamic', options).format(date);
+      setHijriDate(hijri);
+
+      // Check for Ramadan (Month 9 in Islamic calendar)
+      // We parse the parts to get the month
+      // @ts-ignore
+      const parts = new Intl.DateTimeFormat('en-US-u-ca-islamic', { ...options, month: 'numeric' }).formatToParts(date);
+      const monthPart = parts.find(p => p.type === 'month')?.value;
+      const dayPart = parts.find(p => p.type === 'day')?.value;
+
+      if (monthPart === '9' && dayPart) {
+        setRamadanDay(parseInt(dayPart));
+      }
+    } catch (e) {
+      console.error("Error calculating Hijri date", e);
+    }
   }, []);
+
+  const getIcon = (name: string) => {
+    switch (name?.toLowerCase()) {
+      case 'clock': return <Clock className="text-[#d4af37]" size={40} />;
+      case 'heart': return <Heart className="text-[#d4af37]" size={40} />;
+      case 'graduation': return <GraduationCap className="text-[#d4af37]" size={40} />;
+      case 'home': return <Home className="text-[#d4af37]" size={40} />;
+      case 'users': return <Users className="text-[#d4af37]" size={40} />;
+      default: return <Star className="text-[#d4af37]" size={40} />;
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#042f24]">
@@ -94,13 +132,22 @@ const PublicHome = () => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
           <div className="w-[80%] h-[90%] border-[20px] border-[#d4af37] mihrab-shape"></div>
         </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#042f24] via-transparent to-[#042f24]/50"></div>
         <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-8xl font-black mb-4 tracking-tight leading-tight italic">
             {profile?.common_name || 'Jamiatul Haq'}
           </h1>
-          <p className="text-xl md:text-3xl font-arabic mb-10 text-[#d4af37] tracking-[0.2em] uppercase">
+          <p className="text-xl md:text-3xl font-arabic mb-4 text-[#d4af37] tracking-[0.2em] uppercase">
             {profile?.official_name || 'Islamic Society of Franklin Township'}
           </p>
+
+          {/* Hijri Date Display */}
+          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-[#d4af37]/30 mb-8 animate-fade-in-up">
+            <Moon size={16} className="text-[#d4af37]" />
+            <span className="text-sm md:text-base font-bold uppercase tracking-widest text-[#d4af37]">
+              {ramadanDay ? `Ramadan Day ${ramadanDay}` : hijriDate}
+            </span>
+          </div>
           <div className="flex flex-wrap justify-center gap-6 mt-12">
             <Link to="/prayer-times" className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black shadow-2xl hover:bg-white transition-all transform hover:-translate-y-1 flex items-center gap-3 uppercase text-sm tracking-widest">
               <Clock size={20} /> Prayer Schedule
@@ -110,8 +157,45 @@ const PublicHome = () => {
             </Link>
           </div>
         </div>
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#d4af37] text-[#042f24] px-8 py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center gap-2">
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#d4af37] text-[#042f24] px-8 py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center gap-2 z-20">
           <Heart size={18} fill="currentColor" /> Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}
+        </div>
+      </section>
+
+      {/* Community Highlights - New Section */}
+      <section className="py-20 bg-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#d4af37] via-[#042f24] to-[#d4af37]"></div>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="text-[#d4af37] font-black uppercase tracking-[0.3em] text-[10px] block mb-2">More Than A Masjid</span>
+            <h2 className="text-4xl md:text-5xl font-black text-[#042f24] italic">Serving The Community</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {services.length > 0 ? (
+              services.map((service) => (
+                <div key={service.id} className="p-12 bg-white rounded-[3.5rem] border-2 border-[#f0e6d2] shadow-sm hover:shadow-2xl hover:border-[#d4af37] transition-all group text-center">
+                  <div className="mb-6 p-6 bg-[#fdfbf7] rounded-[2rem] inline-block shadow-sm group-hover:scale-110 transition-transform">
+                    {getIcon(service.icon_name)}
+                  </div>
+                  <h3 className="text-3xl font-black text-[#042f24] mb-4 italic">{service.title}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed line-clamp-3 italic">
+                    {service.description}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-3 text-center text-slate-400 font-bold italic">
+                Services loading or none available...
+              </div>
+            )}
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link to="/services" className="inline-flex items-center gap-2 text-[#042f24] font-black uppercase tracking-widest text-xs border-b-2 border-[#d4af37] pb-1 hover:text-[#d4af37] transition-colors">
+              View All Services <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </section>
 
