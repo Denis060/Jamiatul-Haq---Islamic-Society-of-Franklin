@@ -270,6 +270,7 @@ const AuthGuard = ({ children }: { children?: React.ReactNode }) => {
 
 const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
   const navigate = useNavigate();
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -280,34 +281,76 @@ const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
     }
   };
 
+  const NavItem = ({ to, icon: Icon, label }: any) => (
+    <Link
+      to={to}
+      onClick={() => setSidebarOpen(false)}
+      className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"
+    >
+      <Icon size={18} /> {label}
+    </Link>
+  );
+
   return (
     <div className="flex h-screen bg-[#fdfbf7] overflow-hidden">
-      <aside className="w-80 bg-[#042f24] text-white hidden lg:flex flex-col border-r-8 border-[#d4af37]">
-        <div className="p-10 border-b border-white/10 text-center">
+      {/* Mobile Header */}
+      <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#042f24] text-white flex items-center justify-between px-4 z-40 border-b-4 border-[#d4af37]">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setSidebarOpen(true)} className="text-[#d4af37]">
+            <Menu size={28} />
+          </button>
+          <span className="font-black italic text-lg tracking-tight">Admin Portal</span>
+        </div>
+      </header>
+
+      {/* Overlay backdrop for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-80 bg-[#042f24] text-white flex flex-col border-r-8 border-[#d4af37] 
+        transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen shadow-2xl
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-10 border-b border-white/10 text-center relative">
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="absolute top-4 right-4 lg:hidden text-white/40 hover:text-white transition-colors"
+          >
+            <X size={24} />
+          </button>
           <h2 className="text-3xl font-black italic text-[#d4af37]">Portal</h2>
           <p className="text-[10px] text-white/40 uppercase tracking-widest mt-2 font-black">Management Console</p>
         </div>
-        <nav className="flex-1 p-8 space-y-2 font-black uppercase text-[10px] tracking-widest">
-          <Link to="/admin/dashboard" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><LayoutDashboard size={18} /> Dashboard</Link>
-          <Link to="/admin/messages" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><MessageSquare size={18} /> Inbox</Link>
-          <Link to="/admin/announcements" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Megaphone size={18} /> Announcements</Link>
-          <Link to="/admin/ramadan" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Moon size={18} /> Ramadan hub</Link>
-          <Link to="/admin/profile" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Landmark size={18} /> Masjid Profile</Link>
-          <Link to="/admin/leadership" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Users size={18} /> Team</Link>
-          <Link to="/admin/events" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Calendar size={18} /> Events</Link>
-          <Link to="/admin/services" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><Briefcase size={18} /> Services</Link>
-          <Link to="/admin/gallery" className="flex items-center gap-4 p-4 rounded-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"><ImageIcon size={18} /> Gallery</Link>
+
+        <nav className="flex-1 p-8 space-y-2 font-black uppercase text-[10px] tracking-widest overflow-y-auto">
+          <NavItem to="/admin/dashboard" icon={LayoutDashboard} label="Dashboard" />
+          <NavItem to="/admin/messages" icon={MessageSquare} label="Inbox" />
+          <NavItem to="/admin/announcements" icon={Megaphone} label="Announcements" />
+          <NavItem to="/admin/ramadan" icon={Moon} label="Ramadan Hub" />
+          <NavItem to="/admin/profile" icon={Landmark} label="Masjid Profile" />
+          <NavItem to="/admin/leadership" icon={Users} label="Team" />
+          <NavItem to="/admin/events" icon={Calendar} label="Events" />
+          <NavItem to="/admin/services" icon={Briefcase} label="Services" />
+          <NavItem to="/admin/gallery" icon={ImageIcon} label="Gallery" />
         </nav>
-        <div className="p-8">
+
+        <div className="p-8 border-t border-white/5">
           <button
             onClick={handleSignOut}
-            className="w-full p-4 rounded-2xl bg-red-950/50 text-red-400 font-black hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 group"
+            className="w-full p-4 rounded-2xl bg-red-950/50 text-red-400 font-black hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2 group text-[10px] uppercase tracking-widest"
           >
             <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" /> Sign Out
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-y-auto p-12 bg-islamic-pattern">
+
+      <main className="flex-1 overflow-y-auto p-4 lg:p-12 bg-islamic-pattern mt-16 lg:mt-0 w-full">
         {children}
       </main>
     </div>
