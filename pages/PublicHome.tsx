@@ -14,7 +14,7 @@ const PublicHome = () => {
   const [services, setServices] = useState<any[]>([]);
   const [hijriDate, setHijriDate] = useState<string>('');
   const [ramadanDay, setRamadanDay] = useState<number | null>(null);
-  const [nextPrayer, setNextPrayer] = useState<{ name: string, time: string, isIftar?: boolean } | null>(null);
+  const [nextPrayer, setNextPrayer] = useState<{ name: string, time: string, isIftar?: boolean, isActive?: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -114,20 +114,35 @@ const PublicHome = () => {
         const pDate = new Date();
         pDate.setHours(hours, minutes, 0);
 
-        if (pDate > now) {
-          const isMaghrib = p === 'maghrib';
-          // Check if it's Ramadan (we assume ramadanDay is set if it is)
-          const isRamadan = ramadanDay !== null;
+        // Define Active Window (e.g. 20 minutes after start)
+        const pEndDate = new Date(pDate);
+        pEndDate.setMinutes(pDate.getMinutes() + 20);
 
+        const isMaghrib = p === 'maghrib';
+        const isRamadan = ramadanDay !== null;
+
+        // CHECK 1: Is it currently "Active" (within the 20 min window)?
+        if (now >= pDate && now <= pEndDate) {
           return {
             name: (isRamadan && isMaghrib) ? 'Iftar' : p.charAt(0).toUpperCase() + p.slice(1),
             time: prayerTimes[p],
-            isIftar: isRamadan && isMaghrib
+            isIftar: isRamadan && isMaghrib,
+            isActive: true
+          };
+        }
+
+        // CHECK 2: Is it the Next upcoming prayer?
+        if (pDate > now) {
+          return {
+            name: (isRamadan && isMaghrib) ? 'Iftar' : p.charAt(0).toUpperCase() + p.slice(1),
+            time: prayerTimes[p],
+            isIftar: isRamadan && isMaghrib,
+            isActive: false
           };
         }
       }
       // If all passed, show Fajr (Next Day)
-      return { name: 'Fajr (Tom)', time: prayerTimes.fajr, isIftar: false };
+      return { name: 'Fajr (Tom)', time: prayerTimes.fajr, isIftar: false, isActive: false };
     };
 
     setNextPrayer(getNext());
@@ -228,13 +243,24 @@ const PublicHome = () => {
           </div>
         </div>
         <div className="absolute bottom-6 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-[90%] bg-[#d4af37] text-[#042f24] px-6 py-3 md:px-8 md:py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center justify-center gap-2 z-20 whitespace-nowrap border-2 border-[#042f24]">
-          {nextPrayer?.isIftar ? <Moon size={18} fill="currentColor" /> : <Clock size={18} />}
-          {nextPrayer ? (
-            <span className="text-sm md:text-base">
-              {nextPrayer.isIftar ? 'Iftar Time' : 'Next Prayer'}: <span className="font-black">{nextPrayer.name === 'Iftar' ? '' : nextPrayer.name} {nextPrayer.time}</span>
-            </span>
+          {nextPrayer?.isActive ? (
+            <div className="flex items-center gap-2">
+              {nextPrayer.isIftar ? <Moon size={20} fill="currentColor" className="animate-pulse" /> : <Clock size={20} className="animate-spin-slow" />}
+              <span className="text-sm md:text-base">
+                {nextPrayer.isIftar ? 'It is Iftar Time!' : `It is ${nextPrayer.name} Time`}
+              </span>
+            </div>
           ) : (
-            <span className="text-sm md:text-base">Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}</span>
+            <>
+              {nextPrayer?.isIftar ? <Moon size={18} fill="currentColor" /> : <Clock size={18} />}
+              {nextPrayer ? (
+                <span className="text-sm md:text-base">
+                  {nextPrayer.isIftar ? 'Iftar Time' : 'Next Prayer'}: <span className="font-black">{nextPrayer.name === 'Iftar' ? '' : nextPrayer.name} {nextPrayer.time}</span>
+                </span>
+              ) : (
+                <span className="text-sm md:text-base">Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}</span>
+              )}
+            </>
           )}
         </div>
       </section>
