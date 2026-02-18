@@ -14,6 +14,7 @@ const PublicHome = () => {
   const [services, setServices] = useState<any[]>([]);
   const [hijriDate, setHijriDate] = useState<string>('');
   const [ramadanDay, setRamadanDay] = useState<number | null>(null);
+  const [nextPrayer, setNextPrayer] = useState<{ name: string, time: string, isIftar?: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,6 +67,50 @@ const PublicHome = () => {
       console.error("Error calculating Hijri date", e);
     }
   }, []);
+
+  // Calculate Next Prayer / Iftar
+  useEffect(() => {
+    if (!prayerTimes) return;
+
+    const getNext = () => {
+      const now = new Date();
+      const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+      for (const p of prayers) {
+        const timeStr = prayerTimes[p];
+        if (!timeStr) continue;
+
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':').map(Number);
+
+        if (hours === 12 && modifier === 'AM') hours = 0;
+        if (hours !== 12 && modifier === 'PM') hours += 12;
+
+        const pDate = new Date();
+        pDate.setHours(hours, minutes, 0);
+
+        if (pDate > now) {
+          const isMaghrib = p === 'maghrib';
+          // Check if it's Ramadan (we assume ramadanDay is set if it is)
+          const isRamadan = ramadanDay !== null;
+
+          return {
+            name: (isRamadan && isMaghrib) ? 'Iftar' : p.charAt(0).toUpperCase() + p.slice(1),
+            time: timeStr,
+            isIftar: isRamadan && isMaghrib
+          };
+        }
+      }
+      // If all passed, show Fajr (Next Day)
+      return { name: 'Fajr (Tom)', time: prayerTimes.fajr, isIftar: false };
+    };
+
+    setNextPrayer(getNext());
+
+    // Update every minute (optional, but good for accuracy)
+    const interval = setInterval(() => setNextPrayer(getNext()), 60000);
+    return () => clearInterval(interval);
+  }, [prayerTimes, ramadanDay]);
 
   const getIcon = (name: string) => {
     switch (name?.toLowerCase()) {
@@ -157,8 +202,15 @@ const PublicHome = () => {
             </Link>
           </div>
         </div>
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#d4af37] text-[#042f24] px-8 py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center gap-2 z-20">
-          <Heart size={18} fill="currentColor" /> Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#d4af37] text-[#042f24] px-8 py-3 rounded-full font-bold shadow-2xl animate-fade-in-up flex items-center gap-2 z-20 whitespace-nowrap">
+          {nextPrayer?.isIftar ? <Moon size={18} fill="currentColor" /> : <Clock size={18} />}
+          {nextPrayer ? (
+            <span>
+              {nextPrayer.isIftar ? 'Iftar Time' : 'Next Prayer'}: <span className="font-black">{nextPrayer.name === 'Iftar' ? '' : nextPrayer.name} {nextPrayer.time}</span>
+            </span>
+          ) : (
+            <span>Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}</span>
+          )}
         </div>
       </section>
 
