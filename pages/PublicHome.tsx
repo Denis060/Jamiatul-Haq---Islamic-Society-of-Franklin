@@ -77,14 +77,39 @@ const PublicHome = () => {
       const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
       for (const p of prayers) {
-        const timeStr = prayerTimes[p];
+        let timeStr = prayerTimes[p];
         if (!timeStr) continue;
 
-        const [time, modifier] = timeStr.split(' ');
+        // Clean up time string (remove extra spaces, handle AM/PM without space, dots)
+        timeStr = timeStr.trim().replace(/\./g, ('').toUpperCase());
+
+        let modifier = 'AM';
+        let time = timeStr;
+
+        if (timeStr.includes('PM')) {
+          modifier = 'PM';
+          time = timeStr.replace('PM', '').trim();
+        } else if (timeStr.includes('AM')) {
+          modifier = 'AM';
+          time = timeStr.replace('AM', '').trim();
+        }
+
         let [hours, minutes] = time.split(':').map(Number);
 
-        if (hours === 12 && modifier === 'AM') hours = 0;
-        if (hours !== 12 && modifier === 'PM') hours += 12;
+        // Smart PM detection if modifier is missing/ambiguous
+        // Fajr is always AM.
+        // Dhuhr is usually PM (12 or 1), strict check.
+        // Asr, Maghrib, Isha are always PM.
+        if (['dhuhr', 'asr', 'maghrib', 'isha'].includes(p)) {
+          // If hours < 12, assume PM for these prayers (e.g. 1:15, 3:45, 5:30)
+          if (hours < 12) modifier = 'PM';
+        }
+
+        if (hours === 12) {
+          hours = modifier === 'PM' ? 12 : 0;
+        } else if (modifier === 'PM') {
+          hours += 12;
+        }
 
         const pDate = new Date();
         pDate.setHours(hours, minutes, 0);
@@ -96,7 +121,7 @@ const PublicHome = () => {
 
           return {
             name: (isRamadan && isMaghrib) ? 'Iftar' : p.charAt(0).toUpperCase() + p.slice(1),
-            time: timeStr,
+            time: prayerTimes[p],
             isIftar: isRamadan && isMaghrib
           };
         }
