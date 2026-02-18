@@ -284,7 +284,9 @@ const PublicHome = () => {
               <Moon size={40} fill="currentColor" />
             </div>
             <div>
-              <h2 className="text-3xl font-black text-white italic">Ramadan is Approaching</h2>
+              <h2 className="text-3xl font-black text-white italic">
+                {ramadanDay ? 'Ramadan Mubarak' : 'Ramadan is Approaching'}
+              </h2>
               <p className="text-[#d4af37] font-bold italic">Check the Iftar schedule and sponsorship opportunities.</p>
             </div>
           </div>
