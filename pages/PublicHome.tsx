@@ -76,6 +76,9 @@ const PublicHome = () => {
       const now = new Date();
       const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
+      console.log("--- DEBUG PRAYER LOGIC ---");
+      console.log("Current System Time:", now.toString());
+
       for (const p of prayers) {
         let timeStr = prayerTimes[p];
         if (!timeStr) continue;
@@ -114,10 +117,14 @@ const PublicHome = () => {
         const pDate = new Date();
         pDate.setHours(hours, minutes, 0);
 
+        console.log(`Checking ${p}: Parsed as ${pDate.toLocaleTimeString()} (${hours}:${minutes}). Greater than now? ${pDate > now}`);
+
         if (pDate > now) {
           const isMaghrib = p === 'maghrib';
           // Check if it's Ramadan (we assume ramadanDay is set if it is)
           const isRamadan = ramadanDay !== null;
+
+          console.log(`>> FOUND NEXT: ${p} (Ramadan: ${isRamadan}, Iftar mode: ${isRamadan && isMaghrib})`);
 
           return {
             name: (isRamadan && isMaghrib) ? 'Iftar' : p.charAt(0).toUpperCase() + p.slice(1),
@@ -127,6 +134,7 @@ const PublicHome = () => {
         }
       }
       // If all passed, show Fajr (Next Day)
+      console.log(">> ALL PASSED. Showing Fajr (Tom)");
       return { name: 'Fajr (Tom)', time: prayerTimes.fajr, isIftar: false };
     };
 
