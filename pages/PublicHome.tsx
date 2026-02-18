@@ -203,38 +203,38 @@ const PublicHome = () => {
           <div className="w-[80%] h-[90%] border-[20px] border-[#d4af37] mihrab-shape"></div>
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-[#042f24] via-transparent to-[#042f24]/50"></div>
-        <div className="relative z-10 max-w-5xl mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-8xl font-black mb-4 tracking-tight leading-tight italic">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 text-center mt-[-5vh]">
+          <h1 className="text-4xl md:text-8xl font-black mb-2 md:mb-4 tracking-tight leading-tight italic drop-shadow-lg">
             {profile?.common_name || 'Jamiatul Haq'}
           </h1>
-          <p className="text-xl md:text-3xl font-arabic mb-4 text-[#d4af37] tracking-[0.2em] uppercase">
+          <p className="text-lg md:text-3xl font-arabic mb-6 md:mb-8 text-[#d4af37] tracking-[0.1em] md:tracking-[0.2em] uppercase drop-shadow-md">
             {profile?.official_name || 'Islamic Society of Franklin Township'}
           </p>
 
           {/* Hijri Date Display */}
-          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-[#d4af37]/30 mb-8 animate-fade-in-up">
-            <Moon size={16} className="text-[#d4af37]" />
-            <span className="text-sm md:text-base font-bold uppercase tracking-widest text-[#d4af37]">
+          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-1.5 md:px-6 md:py-2 rounded-full border border-[#d4af37]/30 mb-8 animate-fade-in-up">
+            <Moon size={14} className="text-[#d4af37]" />
+            <span className="text-xs md:text-base font-bold uppercase tracking-widest text-[#d4af37]">
               {ramadanDay ? `Ramadan Day ${ramadanDay}` : hijriDate}
             </span>
           </div>
-          <div className="flex flex-wrap justify-center gap-6 mt-12">
-            <Link to="/prayer-times" className="bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black shadow-2xl hover:bg-white transition-all transform hover:-translate-y-1 flex items-center gap-3 uppercase text-sm tracking-widest">
-              <Clock size={20} /> Prayer Schedule
+          <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-6 mt-8 md:mt-12 w-full px-4 md:px-0">
+            <Link to="/prayer-times" className="w-full md:w-auto bg-[#d4af37] text-[#042f24] px-8 py-3 md:px-10 md:py-4 rounded-full font-black shadow-2xl hover:bg-white transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3 uppercase text-xs md:text-sm tracking-widest">
+              <Clock size={16} /> Prayer Schedule
             </Link>
-            <Link to="/ramadan" className="bg-white/10 backdrop-blur-md border-2 border-[#d4af37] text-white px-10 py-4 rounded-full font-black hover:bg-[#d4af37] hover:text-[#042f24] transition-all flex items-center gap-3 uppercase text-sm tracking-widest">
-              <Moon size={20} /> Ramadan Hub
+            <Link to="/ramadan" className="w-full md:w-auto bg-white/10 backdrop-blur-md border-2 border-[#d4af37] text-white px-8 py-3 md:px-10 md:py-4 rounded-full font-black hover:bg-[#d4af37] hover:text-[#042f24] transition-all flex items-center justify-center gap-3 uppercase text-xs md:text-sm tracking-widest">
+              <Moon size={16} /> Ramadan Hub
             </Link>
           </div>
         </div>
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-[#d4af37] text-[#042f24] px-8 py-3 rounded-full font-bold shadow-2xl animate-fade-in-up flex items-center gap-2 z-20 whitespace-nowrap">
+        <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-[90%] md:w-auto bg-[#d4af37] text-[#042f24] px-6 py-3 md:px-8 md:py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center justify-center gap-2 z-20 whitespace-nowrap border-2 border-[#042f24]">
           {nextPrayer?.isIftar ? <Moon size={18} fill="currentColor" /> : <Clock size={18} />}
           {nextPrayer ? (
-            <span>
+            <span className="text-sm md:text-base">
               {nextPrayer.isIftar ? 'Iftar Time' : 'Next Prayer'}: <span className="font-black">{nextPrayer.name === 'Iftar' ? '' : nextPrayer.name} {nextPrayer.time}</span>
             </span>
           ) : (
-            <span>Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}</span>
+            <span className="text-sm md:text-base">Jumu'ah: {prayerTimes?.jumua || profile?.jumua_time || '1:15 PM'}</span>
           )}
         </div>
       </section>
