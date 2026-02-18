@@ -227,7 +227,7 @@ const PublicHome = () => {
             </Link>
           </div>
         </div>
-        <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 w-[90%] md:w-auto bg-[#d4af37] text-[#042f24] px-6 py-3 md:px-8 md:py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center justify-center gap-2 z-20 whitespace-nowrap border-2 border-[#042f24]">
+        <div className="absolute bottom-6 md:bottom-10 left-0 right-0 mx-auto w-fit max-w-[90%] bg-[#d4af37] text-[#042f24] px-6 py-3 md:px-8 md:py-3 rounded-full font-bold shadow-2xl animate-bounce flex items-center justify-center gap-2 z-20 whitespace-nowrap border-2 border-[#042f24]">
           {nextPrayer?.isIftar ? <Moon size={18} fill="currentColor" /> : <Clock size={18} />}
           {nextPrayer ? (
             <span className="text-sm md:text-base">
