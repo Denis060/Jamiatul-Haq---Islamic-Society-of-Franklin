@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import { Event } from '../../types';
@@ -8,8 +7,9 @@ const AdminEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Form State
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -30,7 +30,7 @@ const AdminEvents = () => {
       .from('events')
       .select('*')
       .order('start_time', { ascending: true });
-    
+
     if (error) setError(error.message);
     if (data) setEvents(data);
     setLoading(false);
@@ -71,41 +71,96 @@ const AdminEvents = () => {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleEdit = (event: Event) => {
+    setEditingId(event.id);
+    setTitle(event.title);
+    setSlug(event.slug);
+    setDescription(event.description);
+    setLocation(event.location);
+    setCoverImagePreview(event.cover_image_url);
+    setCoverImage(null); // Reset file input
+
+    // Format UTC time to local 'YYYY-MM-DDTHH:mm' for datetime-local input
+    if (event.start_time) {
+      const date = new Date(event.start_time);
+      // Construct local time string manually to avoid timezone shift issues
+      // Get local components
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      const localIsoString = `${year}-${month}-${day}T${hours}:${minutes}`;
+      setStartTime(localIsoString);
+    }
+
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUploading(true);
     setError(null);
 
-    let imageUrl = '';
-    if (coverImage) {
-      imageUrl = await uploadImage(coverImage) || '';
-    }
+    try {
+      let finalImageUrl = coverImagePreview;
 
-    const { error } = await supabase.from('events').insert([
-      { 
-        title, 
-        slug, 
-        description, 
-        start_time: startTime, 
-        location, 
-        status: 'published',
-        cover_image_url: imageUrl 
+      // If a new file was selected, upload it
+      if (coverImage) {
+        const uploadedUrl = await uploadImage(coverImage);
+        if (!uploadedUrl) throw new Error("Image upload failed");
+        finalImageUrl = uploadedUrl;
+      } else if (finalImageUrl?.startsWith('blob:')) {
+        // Safety check to ensure we don't save blob URLs if upload failed silently
+        finalImageUrl = null;
       }
-    ]);
 
-    if (!error) {
+      // Fix Timezone: Convert local datetime-local string to UTC ISO string
+      // proper ISO string handles timezone offset correctly
+      const isoStartTime = new Date(startTime).toISOString();
+
+      const eventData = {
+        title,
+        slug,
+        description,
+        start_time: isoStartTime,
+        location,
+        status: 'published',
+        cover_image_url: finalImageUrl
+      };
+
+      if (editingId) {
+        // Update existing event
+        const { error } = await supabase
+          .from('events')
+          .update(eventData)
+          .eq('id', editingId);
+
+        if (error) throw error;
+      } else {
+        // Create new event
+        const { error } = await supabase
+          .from('events')
+          .insert([eventData]);
+
+        if (error) throw error;
+      }
+
       setIsAdding(false);
       resetForm();
       fetchEvents();
-    } else {
-      setError(error.message);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('Delete this event forever?')) {
-      const { error } = await supabase.from('events').delete().match({ id });
+      const { error } = await supabase.from('events').delete().eq('id', id);
       if (!error) fetchEvents();
       else setError(error.message);
     }
@@ -119,6 +174,7 @@ const AdminEvents = () => {
     setLocation('');
     setCoverImage(null);
     setCoverImagePreview(null);
+    setEditingId(null);
     setError(null);
   };
 
@@ -131,12 +187,17 @@ const AdminEvents = () => {
           <h1 className="text-4xl font-black text-[#042f24] italic tracking-tight">Events Management</h1>
           <p className="text-slate-500 font-medium mt-1">Add, edit, or remove community programs.</p>
         </div>
-        <button 
+        <button
           onClick={() => {
-            setIsAdding(!isAdding);
-            if (isAdding) resetForm();
+            if (isAdding) {
+              setIsAdding(false);
+              resetForm();
+            } else {
+              resetForm();
+              setIsAdding(true);
+            }
           }}
-          className="bg-[#042f24] text-white px-8 py-4 rounded-full font-black flex items-center gap-3 hover:bg-[#d4af37] transition-all shadow-xl uppercase text-xs tracking-widest"
+          className={`${isAdding ? 'bg-red-500 hover:bg-red-600' : 'bg-[#042f24] hover:bg-[#d4af37]'} text-white px-8 py-4 rounded-full font-black flex items-center gap-3 transition-all shadow-xl uppercase text-xs tracking-widest`}
         >
           {isAdding ? <><X size={20} /> Cancel</> : <><Plus size={20} /> New Event</>}
         </button>
@@ -149,15 +210,17 @@ const AdminEvents = () => {
       )}
 
       {isAdding && (
-        <form onSubmit={handleCreate} className="bg-white p-12 rounded-[3.5rem] shadow-2xl border-2 border-[#f0e6d2] mb-16 animate-in zoom-in-95 duration-300 relative">
+        <form onSubmit={handleSubmit} className="bg-white p-12 rounded-[3.5rem] shadow-2xl border-2 border-[#f0e6d2] mb-16 animate-in zoom-in-95 duration-300 relative">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-8">
               <div>
                 <label className="block text-xs font-black uppercase tracking-widest text-[#d4af37] mb-3">Event Title</label>
-                <input 
+                <input
                   value={title}
                   onChange={(e) => {
                     setTitle(e.target.value);
+                    // Only auto-generate slug if checking new title or if slug is empty
+                    // But generally keeping it synced is fine for admin simplicty
                     setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
                   }}
                   className={inputClasses}
@@ -165,11 +228,11 @@ const AdminEvents = () => {
                   placeholder="e.g. Community Potluck"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-[#d4af37] mb-3">Start Date & Time</label>
-                  <input 
+                  <input
                     type="datetime-local"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
@@ -179,7 +242,7 @@ const AdminEvents = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest text-[#d4af37] mb-3">Location</label>
-                  <input 
+                  <input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     className={inputClasses}
@@ -191,7 +254,7 @@ const AdminEvents = () => {
 
               <div>
                 <label className="block text-xs font-black uppercase tracking-widest text-[#d4af37] mb-3">Description</label>
-                <textarea 
+                <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className={`${inputClasses} h-44 resize-none font-medium text-slate-700`}
@@ -204,18 +267,17 @@ const AdminEvents = () => {
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-[#d4af37] mb-3">Event Cover Image</label>
               <div className="relative group h-full max-h-[400px]">
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   accept="image/*"
                   onChange={handleFileChange}
                   className="hidden"
                   id="cover-upload-form"
                 />
-                <label 
+                <label
                   htmlFor="cover-upload-form"
-                  className={`flex flex-col items-center justify-center w-full h-full border-4 border-dashed rounded-[3rem] cursor-pointer transition-all overflow-hidden relative group ${
-                    coverImagePreview ? 'border-[#d4af37]' : 'border-[#f0e6d2] hover:border-[#d4af37] bg-slate-50'
-                  }`}
+                  className={`flex flex-col items-center justify-center w-full h-full border-4 border-dashed rounded-[3rem] cursor-pointer transition-all overflow-hidden relative group ${coverImagePreview ? 'border-[#d4af37]' : 'border-[#f0e6d2] hover:border-[#d4af37] bg-slate-50'
+                    }`}
                 >
                   {coverImagePreview ? (
                     <>
@@ -227,7 +289,7 @@ const AdminEvents = () => {
                   ) : (
                     <div className="flex flex-col items-center text-slate-400 group-hover:text-[#d4af37]">
                       <div className="p-6 bg-white rounded-full shadow-lg mb-4">
-                         <Upload size={32} />
+                        <Upload size={32} />
                       </div>
                       <span className="font-black uppercase tracking-widest text-xs text-center">Upload Event Cover</span>
                       <span className="text-[10px] mt-2 text-slate-400">JPG, PNG up to 5MB</span>
@@ -235,7 +297,7 @@ const AdminEvents = () => {
                   )}
                 </label>
                 {coverImagePreview && (
-                  <button 
+                  <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); setCoverImage(null); setCoverImagePreview(null); }}
                     className="absolute top-6 right-6 bg-red-500 text-white p-3 rounded-full shadow-2xl hover:bg-red-600 transition-colors z-20"
@@ -247,12 +309,16 @@ const AdminEvents = () => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={uploading}
             className="w-full mt-12 bg-[#042f24] text-[#d4af37] py-6 rounded-full font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4 text-sm"
           >
-            {uploading ? <><Loader2 className="animate-spin" size={24} /> Bismillah...</> : 'Publish to Community'}
+            {uploading ? (
+              <><Loader2 className="animate-spin" size={24} /> Processing...</>
+            ) : (
+              editingId ? 'Update Event' : 'Publish to Community'
+            )}
           </button>
         </form>
       )}
@@ -281,7 +347,18 @@ const AdminEvents = () => {
                     </div>
                   )}
                   <div className="absolute top-6 right-6 flex gap-2">
-                    <button onClick={() => handleDelete(event.id)} className="bg-white/90 backdrop-blur p-3 rounded-2xl text-red-500 shadow-xl hover:bg-red-500 hover:text-white transition-all">
+                    <button
+                      onClick={() => handleEdit(event)}
+                      className="bg-white/90 backdrop-blur p-3 rounded-2xl text-[#d4af37] shadow-xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all"
+                      title="Edit Event"
+                    >
+                      <Edit2 size={20} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(event.id)}
+                      className="bg-white/90 backdrop-blur p-3 rounded-2xl text-red-500 shadow-xl hover:bg-red-500 hover:text-white transition-all"
+                      title="Delete Event"
+                    >
                       <Trash2 size={20} />
                     </button>
                   </div>
@@ -291,19 +368,19 @@ const AdminEvents = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="p-10 flex-1 flex flex-col justify-between">
                   <div>
                     <h3 className="text-2xl font-black text-[#042f24] italic mb-4 leading-tight group-hover:text-[#d4af37] transition-colors">{event.title}</h3>
                     <div className="space-y-3 mb-8">
-                       <div className="flex items-center gap-3 text-slate-500 text-sm font-bold">
-                          <Clock size={16} className="text-[#d4af37]" />
-                          {new Date(event.start_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                       </div>
-                       <div className="flex items-center gap-3 text-slate-500 text-sm font-bold">
-                          <MapPin size={16} className="text-[#d4af37]" />
-                          {event.location}
-                       </div>
+                      <div className="flex items-center gap-3 text-slate-500 text-sm font-bold">
+                        <Clock size={16} className="text-[#d4af37]" />
+                        {new Date(event.start_time).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div className="flex items-center gap-3 text-slate-500 text-sm font-bold">
+                        <MapPin size={16} className="text-[#d4af37]" />
+                        {event.location}
+                      </div>
                     </div>
                     <p className="text-slate-500 text-sm italic leading-relaxed line-clamp-3">
                       {event.description}
