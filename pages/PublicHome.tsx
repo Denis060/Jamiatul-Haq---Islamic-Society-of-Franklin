@@ -81,6 +81,7 @@ const PublicHome = () => {
 
       for (const p of prayers) {
         let timeStr = prayerTimes[p];
+        console.log(`Raw time for ${p}: '${timeStr}' (Type: ${typeof timeStr})`);
         if (!timeStr) continue;
 
         // Clean up time string (remove extra spaces, handle AM/PM without space, dots)
