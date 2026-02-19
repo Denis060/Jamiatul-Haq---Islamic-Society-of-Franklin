@@ -124,6 +124,41 @@ const PublicRamadan = () => {
           </div>
         </div>
 
+        {/* Essential Duas Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
+          <div className="bg-[#fdfbf7] p-10 rounded-[3rem] border-2 border-[#d4af37] relative overflow-hidden group hover:shadow-xl transition-all text-center">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <h3 className="text-[#d4af37] font-black uppercase tracking-[0.2em] text-xs mb-6 flex items-center justify-center gap-3">
+              <Sun size={18} /> Dua for Suhoor
+            </h3>
+            <p className="text-3xl lg:text-4xl font-black text-[#042f24] leading-relaxed mb-6 font-serif" dir="rtl">
+              وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ
+            </p>
+            <p className="text-slate-400 italic text-sm mb-2 font-medium">
+              "Wa bisawmi ghadinn nawaiytu min shahri ramadan"
+            </p>
+            <p className="text-[#042f24] font-bold text-sm opacity-70 max-w-md mx-auto">
+              I intend to keep the fast for tomorrow in the month of Ramadan.
+            </p>
+          </div>
+
+          <div className="bg-[#042f24] p-10 rounded-[3rem] border-4 border-[#064e3b] relative overflow-hidden group hover:shadow-xl transition-all text-white text-center">
+            <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-islamic-pattern pointer-events-none"></div>
+            <h3 className="text-[#d4af37] font-black uppercase tracking-[0.2em] text-xs mb-6 flex items-center justify-center gap-3 relative z-10">
+              <Moon size={18} /> Dua for Iftar
+            </h3>
+            <p className="text-3xl lg:text-4xl font-black text-white leading-relaxed mb-6 font-serif relative z-10" dir="rtl">
+              اللَّهُمَّ اِنِّى لَكَ صُمْتُ وَعَلَى رِزْقِكَ اَفْطَرْتُ
+            </p>
+            <p className="text-[#d4af37]/60 italic text-sm mb-2 relative z-10 font-medium">
+              "Allahumma inni laka sumtu wa 'ala rizq-ika aftartu"
+            </p>
+            <p className="text-white/60 font-bold text-sm relative z-10 max-w-md mx-auto">
+              O Allah! I fasted for You and I break my fast with Your sustenance.
+            </p>
+          </div>
+        </div>
+
         <div className="mb-20 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="bg-[#042f24] p-10 rounded-[3rem] text-white flex items-start gap-6 relative overflow-hidden group border-2 border-[#d4af37]/20">
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 mihrab-shape -rotate-12 translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
