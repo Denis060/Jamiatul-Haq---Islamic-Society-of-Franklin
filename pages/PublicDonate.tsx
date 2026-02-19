@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Heart, CreditCard, Landmark, Globe, Copy, Check, DollarSign, ArrowRight } from 'lucide-react';
+import { Heart, CreditCard, Landmark, Globe, Copy, Check, DollarSign, ArrowRight, Utensils, Users } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import SEO from '../components/SEO';
 
@@ -50,6 +50,26 @@ const PublicDonate = () => {
             textColor: 'text-[#042f24]',
             buttonColor: 'bg-[#d4af37] text-[#042f24] hover:bg-white',
             link: profile?.paypal_link || '#'
+        },
+        {
+            id: 'fitra',
+            title: 'Zakat al-Fitr',
+            description: 'Obligatory for every Muslim before Eid ($12-$15/person) to ensure the needy can celebrate.',
+            icon: <Users size={32} />,
+            color: 'bg-purple-600',
+            textColor: 'text-purple-900',
+            buttonColor: 'bg-purple-600 hover:bg-purple-700',
+            link: profile?.paypal_link || '#'
+        },
+        {
+            id: 'iftar',
+            title: 'Sponsor Iftar',
+            description: 'Feed the community this Ramadan. Reserve your sponsorship date on our Ramadan Hub.',
+            icon: <Utensils size={32} />,
+            color: 'bg-orange-500',
+            textColor: 'text-orange-900',
+            buttonColor: 'bg-orange-500 hover:bg-orange-600',
+            link: '/ramadan'
         }
     ];
 
