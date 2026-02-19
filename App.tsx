@@ -39,7 +39,7 @@ const Navbar = ({ profile }: { profile?: any }) => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Prayers', path: '/prayer-times' },
-    { name: 'Ramadan Hub', path: '/ramadan' },
+    { name: 'Ramadan Hub', path: '/ramadan', icon: Moon },
     { name: 'News', path: '/announcements' },
     { name: 'Events', path: '/events' },
     { name: 'Services', path: '/services' },
@@ -69,6 +69,7 @@ const Navbar = ({ profile }: { profile?: any }) => {
                 className={`text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] transition-all hover:text-[#d4af37] ${location.pathname === link.path || (link.path.startsWith('/gallery') && location.pathname.startsWith('/gallery')) || (link.path.startsWith('/events') && location.pathname.startsWith('/events')) ? 'text-[#d4af37] border-b-2 border-[#d4af37] pb-1' : ''
                   }`}
               >
+                {link.icon && <link.icon size={14} className="mb-0.5" />}
                 {link.name}
               </Link>
             ))}
