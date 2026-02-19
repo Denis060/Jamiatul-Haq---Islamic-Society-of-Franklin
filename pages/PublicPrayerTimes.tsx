@@ -15,7 +15,7 @@ const PublicPrayerTimes = () => {
           supabase.from('prayer_times_weekly').select('*').single(),
           supabase.from('masjid_profile').select('*').single()
         ]);
-        
+
         setPrayers(prayerRes.data || MOCK_PRAYER_TIMES);
         setProfile(profileRes.data || MOCK_PROFILE);
       } catch (err) {
@@ -33,6 +33,49 @@ const PublicPrayerTimes = () => {
       <Loader2 className="animate-spin text-[#d4af37]" size={48} />
     </div>
   );
+
+  // Calculate active prayer for highlighting
+  const now = new Date();
+  const getActive = () => {
+    if (!prayers) return null;
+    const prayerList = [
+      { name: 'Fajr', time: prayers.fajr },
+      { name: 'Dhuhr', time: prayers.dhuhr },
+      { name: 'Asr', time: prayers.asr },
+      { name: 'Maghrib', time: prayers.maghrib },
+      { name: 'Isha', time: prayers.isha },
+    ];
+
+    for (const p of prayerList) {
+      if (!p.time) continue;
+      let timeStr = p.time.trim().replace(/\./g, ('').toUpperCase());
+      let modifier = 'AM';
+      let time = timeStr;
+
+      if (timeStr.includes('PM')) { modifier = 'PM'; time = timeStr.replace('PM', '').trim(); }
+      else if (timeStr.includes('AM')) { modifier = 'AM'; time = timeStr.replace('AM', '').trim(); }
+
+      let [hours, minutes] = time.split(':').map(Number);
+
+      // Smart PM detection
+      if (['Dhuhr', 'Asr', 'Maghrib', 'Isha'].includes(p.name)) {
+        if (hours < 12) modifier = 'PM';
+      }
+
+      if (hours === 12) { hours = modifier === 'PM' ? 12 : 0; }
+      else if (modifier === 'PM') { hours += 12; }
+
+      const pDate = new Date();
+      pDate.setHours(hours, minutes, 0);
+      const pEndDate = new Date(pDate);
+      pEndDate.setMinutes(pDate.getMinutes() + 20);
+
+      if (now >= pDate && now <= pEndDate) return p.name;
+    }
+    return null;
+  };
+
+  const activePrayerName = getActive();
 
   const prayerList = [
     { name: 'Fajr', time: prayers.fajr, iqamah: 'See Notes' },
@@ -71,21 +114,27 @@ const PublicPrayerTimes = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-islamic-pattern">
-            {prayerList.map((p, i) => (
-              <div key={p.name} className={`flex items-center justify-between px-12 py-8 group hover:bg-[#d4af37]/5 transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-[#fdfbf7]'} border-b border-[#f0e6d2] last:border-0`}>
-                <div>
-                  <h3 className="text-2xl font-black text-[#042f24] italic group-hover:text-[#d4af37] transition-colors">{p.name}</h3>
-                </div>
-                <div className="flex gap-12 md:gap-24">
-                  <div className="text-center min-w-[80px]">
-                    <span className="text-[10px] uppercase text-[#d4af37] font-black block mb-2 tracking-[0.2em]">Adhan</span>
-                    <span className="text-2xl font-black text-[#042f24]">{p.time || '--:--'}</span>
+            {prayerList.map((p, i) => {
+              const isActive = p.name === activePrayerName;
+              return (
+                <div key={p.name} className={`flex items-center justify-between px-12 py-8 group transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-[#fdfbf7]'} border-b border-[#f0e6d2] last:border-0 relative ${isActive ? 'bg-[#d4af37]/10' : 'hover:bg-[#d4af37]/5'}`}>
+                  {isActive && <div className="absolute left-0 top-0 bottom-0 w-2 bg-[#d4af37]"></div>}
+                  <div>
+                    <h3 className={`text-2xl font-black italic transition-colors ${isActive ? 'text-[#d4af37]' : 'text-[#042f24]'}`}>
+                      {p.name} {isActive && <span className="text-xs bg-[#d4af37] text-[#042f24] px-2 py-1 rounded ml-2 not-italic">LIVE</span>}
+                    </h3>
+                  </div>
+                  <div className="flex gap-12 md:gap-24">
+                    <div className="text-center min-w-[80px]">
+                      <span className="text-[10px] uppercase text-[#d4af37] font-black block mb-2 tracking-[0.2em]">Adhan</span>
+                      <span className={`text-2xl font-black ${isActive ? 'text-[#d4af37]' : 'text-[#042f24]'}`}>{p.time || '--:--'}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="bg-[#f0e6d2] p-10 flex gap-6 items-start">
@@ -95,20 +144,20 @@ const PublicPrayerTimes = () => {
             <div>
               <h4 className="font-black text-[#042f24] uppercase text-sm tracking-widest mb-2">Iqamah & Notices</h4>
               <p className="text-gray-700 leading-relaxed italic">
-                {prayers.notes || "Iqamah times are generally 15-20 minutes after Adhan."} 
+                {prayers.notes || "Iqamah times are generally 15-20 minutes after Adhan."}
                 Doors open 20 minutes before Fajr and close 30 minutes after Isha.
               </p>
             </div>
           </div>
         </div>
-        
+
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-10">
           <div className="bg-white p-10 rounded-[3rem] shadow-xl border-2 border-[#f0e6d2] relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 mihrab-shape -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
             <div className="relative z-10">
               <h3 className="text-3xl font-black text-[#042f24] mb-6 italic">Jumu'ah Prayer</h3>
               <p className="text-gray-600 leading-relaxed mb-8">
-                Friday Khutbah starts at {prayers.jumua || "1:15 PM"}. We recommend arriving early as the hall fills up quickly. 
+                Friday Khutbah starts at {prayers.jumua || "1:15 PM"}. We recommend arriving early as the hall fills up quickly.
               </p>
               <div className="flex items-center gap-3 text-[#d4af37] font-black text-xl italic">
                 <Clock size={24} /> {prayers.jumua || "1:15 PM"} Khutbah
@@ -116,30 +165,30 @@ const PublicPrayerTimes = () => {
             </div>
           </div>
           <div className="bg-[#042f24] p-10 rounded-[3rem] shadow-xl text-white relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-islamic-pattern pointer-events-none"></div>
-             <div className="relative z-10">
-               <h3 className="text-3xl font-black mb-6 italic text-[#d4af37]">Mosque Updates</h3>
-               <p className="text-white/70 leading-relaxed mb-8">
-                 Get real-time iqamah changes and mosque announcements directly on your phone via our WhatsApp community.
-               </p>
-               {profile?.whatsapp_link ? (
-                 <a 
-                   href={profile.whatsapp_link} 
-                   target="_blank" 
-                   rel="noopener noreferrer"
-                   className="inline-block bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg"
-                 >
-                   Join Community Group
-                 </a>
-               ) : (
-                 <button 
-                   disabled
-                   className="bg-white/10 text-white/30 px-10 py-4 rounded-full font-black uppercase text-sm tracking-widest cursor-not-allowed border border-white/10"
-                 >
-                   Link Coming Soon
-                 </button>
-               )}
-             </div>
+            <div className="absolute top-0 left-0 w-full h-full opacity-5 bg-islamic-pattern pointer-events-none"></div>
+            <div className="relative z-10">
+              <h3 className="text-3xl font-black mb-6 italic text-[#d4af37]">Mosque Updates</h3>
+              <p className="text-white/70 leading-relaxed mb-8">
+                Get real-time iqamah changes and mosque announcements directly on your phone via our WhatsApp community.
+              </p>
+              {profile?.whatsapp_link ? (
+                <a
+                  href={profile.whatsapp_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-[#d4af37] text-[#042f24] px-10 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-sm tracking-widest shadow-lg"
+                >
+                  Join Community Group
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="bg-white/10 text-white/30 px-10 py-4 rounded-full font-black uppercase text-sm tracking-widest cursor-not-allowed border border-white/10"
+                >
+                  Link Coming Soon
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
