@@ -11,6 +11,7 @@ const AdminUsers = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [successInfo, setSuccessInfo] = useState<{ email: string, pass: string } | null>(null);
+    const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
 
     const [newUser, setNewUser] = useState({ email: '', password: '', role: 'secretary_general' });
 
@@ -87,7 +88,24 @@ const AdminUsers = () => {
         try {
             const { error } = await supabase.from('admin_users').delete().eq('id', id);
             if (error) throw error;
+            if (expandedUserId === id) setExpandedUserId(null); // Close if open
             fetchUsers();
+        } catch (err: any) {
+            setError(err.message);
+        }
+    };
+
+    const handleRoleChange = async (id: string, newRole: string) => {
+        try {
+            const { error } = await supabase.from('admin_users').update({ role: newRole }).eq('id', id);
+            if (error) throw error;
+            fetchUsers();
+
+            // Show a temporary success message
+            const actionTarget = users.find(u => u.id === id);
+            if (actionTarget) {
+                alert(`Successfully updated role for ${actionTarget.email}`);
+            }
         } catch (err: any) {
             setError(err.message);
         }
@@ -159,24 +177,75 @@ const AdminUsers = () => {
                                 <p className="text-slate-400 text-center italic py-20">No specific roles defined. Defaulting to Super Admin logic for unknown users unless table exists.</p>
                             ) : (
                                 <div className="space-y-4">
-                                    {users.map(user => (
-                                        <div key={user.id} className="flex justify-between items-center bg-slate-50 p-6 rounded-[2rem] border border-slate-100 group">
-                                            <div>
-                                                <div className="font-bold text-[#042f24] text-lg mb-1">{user.email}</div>
-                                                <div className="inline-block bg-[#042f24] text-[#d4af37] px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                                    {user.role.replace('_', ' ')}
-                                                </div>
-                                            </div>
-                                            {user.email !== adminUser?.email && (
-                                                <button
-                                                    onClick={() => handleDelete(user.id, user.email)}
-                                                    className="bg-white text-red-500 p-4 rounded-2xl shadow-sm border border-red-100 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                                    {users.map(user => {
+                                        const isExpanded = expandedUserId === user.id;
+                                        return (
+                                            <div key={user.id} className="bg-slate-50 rounded-[2rem] border border-slate-100 overflow-hidden transition-all duration-300">
+                                                {/* Summary Row */}
+                                                <div
+                                                    className="flex justify-between items-center p-6 cursor-pointer hover:bg-slate-100 transition-colors group"
+                                                    onClick={() => setExpandedUserId(isExpanded ? null : user.id)}
                                                 >
-                                                    <Trash2 size={20} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
+                                                    <div>
+                                                        <div className="font-bold text-[#042f24] text-lg mb-1">{user.email}</div>
+                                                        <div className="inline-block bg-[#042f24] text-[#d4af37] px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
+                                                            {user.role.replace('_', ' ')}
+                                                        </div>
+                                                    </div>
+                                                    {user.email !== adminUser?.email && (
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); handleDelete(user.id, user.email); }}
+                                                            className="bg-white text-red-500 p-4 rounded-2xl shadow-sm border border-red-100 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+                                                            title="Revoke Access"
+                                                        >
+                                                            <Trash2 size={20} />
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* Expanded Profile Details */}
+                                                {isExpanded && (
+                                                    <div className="p-6 pt-0 border-t border-slate-200 mt-2">
+                                                        <div className="bg-white p-6 rounded-3xl border border-slate-100 mt-4 space-y-4">
+
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest block mb-1">Account ID</span>
+                                                                    <span className="font-mono text-xs text-slate-600 bg-slate-50 px-2 py-1 rounded">{user.id}</span>
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest block mb-1">Member Since</span>
+                                                                    <span className="text-sm font-bold text-[#042f24]">
+                                                                        {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="pt-4 border-t border-slate-100">
+                                                                <label className="block text-[9px] text-slate-400 font-black uppercase tracking-widest mb-2">Change Role</label>
+                                                                <div className="flex items-center gap-4">
+                                                                    <select
+                                                                        value={user.role}
+                                                                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                                                        className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-[#d4af37] outline-none font-bold text-sm text-[#042f24]"
+                                                                        disabled={user.email === adminUser?.email} // Prevent changing own role
+                                                                    >
+                                                                        <option value="secretary_general">Secretary General (Restricted Finances)</option>
+                                                                        <option value="financial_secretary">Financial Secretary (Full Finances)</option>
+                                                                        <option value="super_admin">Super Admin (Full Access)</option>
+                                                                    </select>
+                                                                </div>
+                                                                {user.email === adminUser?.email && (
+                                                                    <p className="text-[10px] text-red-400 font-bold mt-1">You cannot change your own role.</p>
+                                                                )}
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             )}
                         </div>
