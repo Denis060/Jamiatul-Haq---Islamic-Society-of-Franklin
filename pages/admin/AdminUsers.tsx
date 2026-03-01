@@ -10,6 +10,7 @@ const AdminUsers = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [successInfo, setSuccessInfo] = useState<{ email: string, pass: string } | null>(null);
 
     const [newUser, setNewUser] = useState({ email: '', role: 'secretary_general' });
 
@@ -35,13 +36,43 @@ const AdminUsers = () => {
         }
     };
 
+    const generatePassword = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+        let pass = 'JamiatulHaq';
+        for (let i = 0; i < 4; i++) {
+            pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return pass + '!';
+    };
+
     const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
+        setSuccessInfo(null);
+
         try {
-            const { error } = await supabase.from('admin_users').insert([{ email: newUser.email.toLowerCase(), role: newUser.role }]);
-            if (error) throw error;
+            const tempPassword = generatePassword();
+            const lowerEmail = newUser.email.toLowerCase();
+
+            // 1. Create User via Supabase Auth
+            const { data: authData, error: authErr } = await supabase.auth.signUp({
+                email: lowerEmail,
+                password: tempPassword,
+            });
+
+            if (authErr) throw authErr;
+
+            // 2. Add Role mapping
+            const { error: dbErr } = await supabase
+                .from('admin_users')
+                .insert([{ email: lowerEmail, role: newUser.role }]);
+
+            if (dbErr) {
+                throw new Error("Account created but failed to assign role: " + dbErr.message);
+            }
+
+            setSuccessInfo({ email: lowerEmail, pass: tempPassword });
             setNewUser({ email: '', role: 'secretary_general' });
             fetchUsers();
         } catch (err: any) {
@@ -97,6 +128,25 @@ const AdminUsers = () => {
             {error && (
                 <div className="bg-red-50 text-red-700 p-4 rounded-2xl font-bold border-2 border-red-200">
                     {error}
+                </div>
+            )}
+
+            {successInfo && (
+                <div className="bg-[#042f24] text-white p-8 rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border-4 border-[#d4af37]">
+                    <div>
+                        <h3 className="text-2xl font-black italic text-[#d4af37] mb-2 flex items-center gap-2"><Shield size={24} /> Account Created Successfully!</h3>
+                        <p className="text-white/70 text-sm font-medium">Please securely share these login credentials with the staff member. They can log in immediately.</p>
+                    </div>
+                    <div className="bg-white/5 p-6 rounded-2xl border border-white/10 w-full md:w-auto">
+                        <div className="mb-3">
+                            <span className="text-[10px] text-white/40 font-black uppercase tracking-widest block mb-1">Email </span>
+                            <span className="font-mono text-lg font-bold">{successInfo.email}</span>
+                        </div>
+                        <div>
+                            <span className="text-[10px] text-white/40 font-black uppercase tracking-widest block mb-1">Temporary Password</span>
+                            <span className="font-mono text-[#d4af37] text-2xl font-black">{successInfo.pass}</span>
+                        </div>
+                    </div>
                 </div>
             )}
 
