@@ -2,12 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
 import { Save, Loader2, Landmark, Clock, Share2, AlertCircle, Upload, X, ImageIcon, List, Database } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const { adminUser } = useAuth();
 
   const [profile, setProfile] = useState({
     id: '',
@@ -328,76 +330,78 @@ const AdminProfile = () => {
         </div>
 
         {/* Donation Settings Card */}
-        <div className="bg-white p-12 rounded-[3.5rem] border-2 border-[#f0e6d2] shadow-sm relative overflow-hidden lg:col-span-2">
-          <div className="flex items-center gap-4 mb-10 text-[#d4af37]">
-            <div className="p-3 bg-slate-50 rounded-2xl">
-              <Landmark size={28} />
+        {adminUser?.role !== 'secretary_general' && (
+          <div className="bg-white p-12 rounded-[3.5rem] border-2 border-[#f0e6d2] shadow-sm relative overflow-hidden lg:col-span-2">
+            <div className="flex items-center gap-4 mb-10 text-[#d4af37]">
+              <div className="p-3 bg-slate-50 rounded-2xl">
+                <Landmark size={28} />
+              </div>
+              <h2 className="text-xl font-black uppercase tracking-widest">Donation Links</h2>
             </div>
-            <h2 className="text-xl font-black uppercase tracking-widest">Donation Links</h2>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">PayPal Link</label>
-              <input
-                value={(profile as any).paypal_link || ''}
-                onChange={e => setProfile({ ...profile, paypal_link: e.target.value } as any)}
-                className={inputClasses}
-                placeholder="https://paypal.me/..."
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Zelle (Email/Phone)</label>
-              <input
-                value={(profile as any).zelle_contact || ''}
-                onChange={e => setProfile({ ...profile, zelle_contact: e.target.value } as any)}
-                className={inputClasses}
-                placeholder="admin@jamiatul-haq.org"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">LaunchGood Link</label>
-              <input
-                value={(profile as any).launchgood_link || ''}
-                onChange={e => setProfile({ ...profile, launchgood_link: e.target.value } as any)}
-                className={inputClasses}
-                placeholder="https://launchgood.com/..."
-              />
-            </div>
-            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-slate-50">
-              <div className="md:col-span-3 mb-2">
-                <h4 className="text-sm font-black text-[#042f24] uppercase tracking-widest">Bank Transfer Details</h4>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Bank Name</label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">PayPal Link</label>
                 <input
-                  value={(profile as any).bank_name || ''}
-                  onChange={e => setProfile({ ...profile, bank_name: e.target.value } as any)}
+                  value={(profile as any).paypal_link || ''}
+                  onChange={e => setProfile({ ...profile, paypal_link: e.target.value } as any)}
                   className={inputClasses}
-                  placeholder="e.g. Chase Bank"
+                  placeholder="https://paypal.me/..."
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Account Number</label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Zelle (Email/Phone)</label>
                 <input
-                  value={(profile as any).account_number || ''}
-                  onChange={e => setProfile({ ...profile, account_number: e.target.value } as any)}
+                  value={(profile as any).zelle_contact || ''}
+                  onChange={e => setProfile({ ...profile, zelle_contact: e.target.value } as any)}
                   className={inputClasses}
-                  placeholder="000000000"
+                  placeholder="admin@jamiatul-haq.org"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Routing Number</label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">LaunchGood Link</label>
                 <input
-                  value={(profile as any).routing_number || ''}
-                  onChange={e => setProfile({ ...profile, routing_number: e.target.value } as any)}
+                  value={(profile as any).launchgood_link || ''}
+                  onChange={e => setProfile({ ...profile, launchgood_link: e.target.value } as any)}
                   className={inputClasses}
-                  placeholder="000000000"
+                  placeholder="https://launchgood.com/..."
                 />
+              </div>
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-8 pt-8 border-t border-slate-50">
+                <div className="md:col-span-3 mb-2">
+                  <h4 className="text-sm font-black text-[#042f24] uppercase tracking-widest">Bank Transfer Details</h4>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Bank Name</label>
+                  <input
+                    value={(profile as any).bank_name || ''}
+                    onChange={e => setProfile({ ...profile, bank_name: e.target.value } as any)}
+                    className={inputClasses}
+                    placeholder="e.g. Chase Bank"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Account Number</label>
+                  <input
+                    value={(profile as any).account_number || ''}
+                    onChange={e => setProfile({ ...profile, account_number: e.target.value } as any)}
+                    className={inputClasses}
+                    placeholder="000000000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3">Routing Number</label>
+                  <input
+                    value={(profile as any).routing_number || ''}
+                    onChange={e => setProfile({ ...profile, routing_number: e.target.value } as any)}
+                    className={inputClasses}
+                    placeholder="000000000"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

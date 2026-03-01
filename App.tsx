@@ -27,6 +27,8 @@ import AdminServices from './pages/admin/AdminServices';
 import AdminLeadership from './pages/admin/AdminLeadership';
 import AdminAnnouncements from './pages/admin/AdminAnnouncements';
 import AdminRamadan from './pages/admin/AdminRamadan';
+import AdminUsers from './pages/admin/AdminUsers';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { supabase, MOCK_PROFILE } from './services/supabase';
 
 const Navbar = ({ profile }: { profile?: any }) => {
@@ -239,24 +241,7 @@ const Footer = () => {
 };
 
 const AuthGuard = ({ children }: { children?: React.ReactNode }) => {
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    // Listen for auth changes (login, logout, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { session, loading } = useAuth();
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#042f24]">
@@ -272,6 +257,7 @@ const AuthGuard = ({ children }: { children?: React.ReactNode }) => {
 const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
   const navigate = useNavigate();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const { adminUser } = useAuth();
 
   const handleSignOut = async () => {
     try {
@@ -327,6 +313,11 @@ const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
           </button>
           <h2 className="text-3xl font-black italic text-[#d4af37]">Portal</h2>
           <p className="text-[10px] text-white/40 uppercase tracking-widest mt-2 font-black">Management Console</p>
+          {adminUser && (
+            <div className="mt-4 inline-block bg-white/10 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-[#d4af37] border border-white/5">
+              Role: {adminUser.role.replace('_', ' ')}
+            </div>
+          )}
         </div>
 
         <nav className="flex-1 p-8 space-y-2 font-black uppercase text-[10px] tracking-widest overflow-y-auto">
@@ -339,6 +330,9 @@ const AdminSidebar = ({ children }: { children?: React.ReactNode }) => {
           <NavItem to="/admin/events" icon={Calendar} label="Events" />
           <NavItem to="/admin/services" icon={Briefcase} label="Services" />
           <NavItem to="/admin/gallery" icon={ImageIcon} label="Gallery" />
+          {adminUser?.role === 'super_admin' && (
+            <NavItem to="/admin/users" icon={Settings} label="Admin Roles" />
+          )}
         </nav>
 
         <div className="p-8 border-t border-white/5">
@@ -390,15 +384,27 @@ const App: React.FC = () => {
           <Route path="/contact" element={<PublicContact />} />
 
           <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AuthGuard><AdminSidebar><AdminDashboard /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/messages" element={<AuthGuard><AdminSidebar><AdminMessages /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/events" element={<AuthGuard><AdminSidebar><AdminEvents /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/services" element={<AuthGuard><AdminSidebar><AdminServices /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/profile" element={<AuthGuard><AdminSidebar><AdminProfile /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/gallery" element={<AuthGuard><AdminSidebar><AdminGallery /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/leadership" element={<AuthGuard><AdminSidebar><AdminLeadership /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/announcements" element={<AuthGuard><AdminSidebar><AdminAnnouncements /></AdminSidebar></AuthGuard>} />
-          <Route path="/admin/ramadan" element={<AuthGuard><AdminSidebar><AdminRamadan /></AdminSidebar></AuthGuard>} />
+          <Route path="/admin/*" element={
+            <AuthProvider>
+              <AuthGuard>
+                <AdminSidebar>
+                  <Routes>
+                    <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="messages" element={<AdminMessages />} />
+                    <Route path="events" element={<AdminEvents />} />
+                    <Route path="services" element={<AdminServices />} />
+                    <Route path="profile" element={<AdminProfile />} />
+                    <Route path="gallery" element={<AdminGallery />} />
+                    <Route path="leadership" element={<AdminLeadership />} />
+                    <Route path="announcements" element={<AdminAnnouncements />} />
+                    <Route path="ramadan" element={<AdminRamadan />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="*" element={<Navigate to="dashboard" replace />} />
+                  </Routes>
+                </AdminSidebar>
+              </AuthGuard>
+            </AuthProvider>
+          } />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

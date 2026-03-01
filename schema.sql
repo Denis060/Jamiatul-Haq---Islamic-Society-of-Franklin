@@ -137,7 +137,15 @@ CREATE TABLE IF NOT EXISTS ramadan_schedule (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 8. Security & Permissions
+-- 8. Admin Users Table (Role-Based Access Control)
+CREATE TABLE IF NOT EXISTS admin_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE NOT NULL,
+  role TEXT NOT NULL DEFAULT 'secretary_general',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 9. Security & Permissions
 ALTER TABLE masjid_profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE prayer_times_weekly ENABLE ROW LEVEL SECURITY;
 ALTER TABLE services ENABLE ROW LEVEL SECURITY;
@@ -145,6 +153,7 @@ ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ramadan_schedule ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Reset and apply all policies
 DO $$ BEGIN
@@ -182,7 +191,12 @@ DO $$ BEGIN
     CREATE POLICY "Public view ramadan" ON ramadan_schedule FOR SELECT USING (true);
     DROP POLICY IF EXISTS "Admin manage ramadan" ON ramadan_schedule;
     CREATE POLICY "Admin manage ramadan" ON ramadan_schedule FOR ALL USING (auth.uid() IS NOT NULL);
+
+    DROP POLICY IF EXISTS "Public view admin_users" ON admin_users;
+    CREATE POLICY "Public view admin_users" ON admin_users FOR SELECT USING (true);
+    DROP POLICY IF EXISTS "Admin manage admin_users" ON admin_users;
+    CREATE POLICY "Admin manage admin_users" ON admin_users FOR ALL USING (auth.uid() IS NOT NULL);
 END $$;
 
--- 9. RELOAD SCHEMA CACHE
+-- 10. RELOAD SCHEMA CACHE
 NOTIFY pgrst, 'reload schema';

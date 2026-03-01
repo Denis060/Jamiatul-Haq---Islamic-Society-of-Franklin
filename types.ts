@@ -46,10 +46,10 @@ export interface Announcement {
   created_at: string;
 }
 
-export interface Profile {
+export interface AdminUser {
   id: string;
-  full_name: string;
-  role: 'admin' | 'editor';
+  email: string;
+  role: 'super_admin' | 'financial_secretary' | 'secretary_general';
 }
 
 export interface GalleryAlbum {
