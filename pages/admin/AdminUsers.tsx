@@ -12,7 +12,7 @@ const AdminUsers = () => {
     const [error, setError] = useState<string | null>(null);
     const [successInfo, setSuccessInfo] = useState<{ email: string, pass: string } | null>(null);
 
-    const [newUser, setNewUser] = useState({ email: '', role: 'secretary_general' });
+    const [newUser, setNewUser] = useState({ email: '', password: '', role: 'secretary_general' });
 
     useEffect(() => {
         if (adminUser?.role === 'super_admin') {
@@ -36,29 +36,25 @@ const AdminUsers = () => {
         }
     };
 
-    const generatePassword = () => {
-        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-        let pass = 'JamiatulHaq';
-        for (let i = 0; i < 4; i++) {
-            pass += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return pass + '!';
-    };
-
     const handleAddUser = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (newUser.password.length < 6) {
+            setError("Password must be at least 6 characters long.");
+            return;
+        }
+
         setSaving(true);
         setError(null);
         setSuccessInfo(null);
 
         try {
-            const tempPassword = generatePassword();
             const lowerEmail = newUser.email.toLowerCase();
 
             // 1. Create User via Supabase Auth
             const { data: authData, error: authErr } = await supabase.auth.signUp({
                 email: lowerEmail,
-                password: tempPassword,
+                password: newUser.password,
             });
 
             if (authErr) throw authErr;
@@ -72,8 +68,8 @@ const AdminUsers = () => {
                 throw new Error("Account created but failed to assign role: " + dbErr.message);
             }
 
-            setSuccessInfo({ email: lowerEmail, pass: tempPassword });
-            setNewUser({ email: '', role: 'secretary_general' });
+            setSuccessInfo({ email: lowerEmail, pass: newUser.password });
+            setNewUser({ email: '', password: '', role: 'secretary_general' });
             fetchUsers();
         } catch (err: any) {
             setError(err.message);
@@ -143,7 +139,7 @@ const AdminUsers = () => {
                             <span className="font-mono text-lg font-bold">{successInfo.email}</span>
                         </div>
                         <div>
-                            <span className="text-[10px] text-white/40 font-black uppercase tracking-widest block mb-1">Temporary Password</span>
+                            <span className="text-[10px] text-white/40 font-black uppercase tracking-widest block mb-1">Set Password</span>
                             <span className="font-mono text-[#d4af37] text-2xl font-black">{successInfo.pass}</span>
                         </div>
                     </div>
@@ -208,6 +204,19 @@ const AdminUsers = () => {
                                     placeholder="name@example.com"
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Set Password</label>
+                            <input
+                                type="text"
+                                required
+                                value={newUser.password}
+                                onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                                className="w-full px-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-[#d4af37] outline-none transition-all font-bold text-[#042f24] font-mono mb-6"
+                                placeholder="Min. 6 characters"
+                                minLength={6}
+                            />
                         </div>
 
                         <div>
