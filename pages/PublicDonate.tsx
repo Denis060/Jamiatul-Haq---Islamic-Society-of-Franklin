@@ -207,7 +207,6 @@ const PublicDonate = () => {
                                     </div>
                                 </div>
 
-                                {/* Zelle Temporarily Disabled
                                 <div className="flex items-start gap-4">
                                     <div className="w-2 h-2 rounded-full bg-[#d4af37] mt-2 shrink-0"></div>
                                     <div>
@@ -218,7 +217,6 @@ const PublicDonate = () => {
                                         </p>
                                     </div>
                                 </div>
-                                */}
                             </div>
                         </div>
                         <div className="mt-10 pt-8 border-t border-white/10 relative z-10">
