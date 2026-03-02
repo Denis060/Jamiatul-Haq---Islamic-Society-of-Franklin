@@ -23,7 +23,7 @@ const AdminLeadership = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const commonRoles = ["Imam", "Chief", "Chairman", "Chairlady", "Secretary", "Treasurer", "Board Member", "Youth Coordinator"];
+  const commonRoles = ["Imam", "Naib", "Chief", "Chairman", "Chairlady", "Secretary", "Treasurer", "Board Member", "Youth Coordinator"];
 
   useEffect(() => {
     fetchMembers();
