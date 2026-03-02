@@ -111,23 +111,25 @@ const PublicDonate = () => {
                             <p className="text-slate-500 mb-10 leading-relaxed text-sm flex-grow">
                                 {option.description}
                             </p>
-                            {option.link !== '#' ? (
-                                <a
-                                    href={option.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-colors shadow-md text-white ${option.buttonColor}`}
-                                >
-                                    Donate Now <ArrowRight size={16} />
-                                </a>
-                            ) : (
-                                <button
-                                    disabled
-                                    className="w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 bg-slate-100 text-slate-400 cursor-not-allowed"
-                                >
-                                    Link Coming Soon
-                                </button>
-                            )}
+                            {/* Buttons Temporarily Disabled until PayPal is setup
+                                {option.link !== '#' ? (
+                                    <a
+                                        href={option.link}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 transition-colors shadow-md text-white ${option.buttonColor}`}
+                                    >
+                                        Donate Now <ArrowRight size={16} />
+                                    </a>
+                                ) : (
+                                    <button
+                                        disabled
+                                        className="w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 bg-slate-100 text-slate-400 cursor-not-allowed"
+                                    >
+                                        Link Coming Soon
+                                    </button>
+                                )}
+                            */}
                         </div>
                     ))}
                 </div>
@@ -205,6 +207,7 @@ const PublicDonate = () => {
                                     </div>
                                 </div>
 
+                                {/* Zelle Temporarily Disabled
                                 <div className="flex items-start gap-4">
                                     <div className="w-2 h-2 rounded-full bg-[#d4af37] mt-2 shrink-0"></div>
                                     <div>
@@ -215,6 +218,7 @@ const PublicDonate = () => {
                                         </p>
                                     </div>
                                 </div>
+                                */}
                             </div>
                         </div>
                         <div className="mt-10 pt-8 border-t border-white/10 relative z-10">
