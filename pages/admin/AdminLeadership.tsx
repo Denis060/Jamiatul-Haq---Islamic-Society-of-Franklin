@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { 
-  Plus, Trash2, Edit2, X, Loader2, AlertCircle, 
+import {
+  Plus, Trash2, Edit2, X, Loader2, AlertCircle,
   CheckCircle2, Users, Upload, Camera, ArrowUp, ArrowDown, Save, Briefcase
 } from 'lucide-react';
 
@@ -36,7 +36,7 @@ const AdminLeadership = () => {
         .from('team_members')
         .select('*')
         .order('sort_order', { ascending: true });
-      
+
       if (error) throw error;
       setMembers(data || []);
     } catch (err: any) {
@@ -61,7 +61,7 @@ const AdminLeadership = () => {
       const filePath = `team/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('events') 
+        .from('events')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
@@ -164,7 +164,7 @@ const AdminLeadership = () => {
           <h1 className="text-4xl font-black text-[#042f24] italic tracking-tight">Leadership Portal</h1>
           <p className="text-slate-500 font-medium">Manage your Chief, Chairman, and Board Members.</p>
         </div>
-        <button 
+        <button
           onClick={() => {
             if (isAdding) resetForm();
             setIsAdding(!isAdding);
@@ -198,25 +198,25 @@ const AdminLeadership = () => {
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Position / Title</label>
-                  <input 
+                  <input
                     list="roles"
-                    value={role} 
-                    onChange={e => setRole(e.target.value)} 
-                    className={inputClasses} 
-                    required 
-                    placeholder="Chief / Chairman / Imam" 
+                    value={role}
+                    onChange={e => setRole(e.target.value)}
+                    className={inputClasses}
+                    required
+                    placeholder="Chief / Chairman / Imam"
                   />
                   <datalist id="roles">
                     {commonRoles.map(r => <option key={r} value={r} />)}
                   </datalist>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Professional Bio</label>
-                <textarea 
-                  value={bio} onChange={e => setBio(e.target.value)} 
-                  className={`${inputClasses} h-40 resize-none font-medium italic leading-relaxed`} 
+                <textarea
+                  value={bio} onChange={e => setBio(e.target.value)}
+                  className={`${inputClasses} h-40 resize-none font-medium italic leading-relaxed`}
                   placeholder="Summarize their contribution and background..."
                 />
               </div>
@@ -231,7 +231,7 @@ const AdminLeadership = () => {
 
             <div className="flex flex-col items-center">
               <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3 w-full text-center">Official Portrait</label>
-              <div 
+              <div
                 className="w-full aspect-[4/5] border-4 border-dashed border-[#f0e6d2] rounded-[3rem] overflow-hidden group cursor-pointer hover:border-[#d4af37] transition-all bg-[#fdfbf7] flex flex-col items-center justify-center text-slate-400 relative"
                 onClick={() => document.getElementById('team-photo-input')?.click()}
               >
@@ -249,7 +249,7 @@ const AdminLeadership = () => {
             </div>
           </div>
 
-          <button 
+          <button
             type="submit" disabled={saving}
             className="w-full mt-12 bg-[#042f24] text-[#d4af37] py-6 rounded-full font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all disabled:opacity-50 flex items-center justify-center gap-4"
           >
@@ -267,31 +267,31 @@ const AdminLeadership = () => {
           {members.map((member) => (
             <div key={member.id} className="bg-white p-10 rounded-[3.5rem] border-2 border-[#f0e6d2] shadow-sm flex flex-col group hover:border-[#d4af37] transition-all overflow-hidden relative">
               <div className="absolute top-4 right-4 z-20 flex gap-2">
-                 <button onClick={() => startEdit(member)} className="p-3 bg-white/90 backdrop-blur text-[#042f24] rounded-2xl shadow-xl hover:bg-[#d4af37] transition-all">
-                    <Edit2 size={16} />
-                 </button>
-                 <button onClick={() => handleDelete(member.id)} className="p-3 bg-white/90 backdrop-blur text-red-500 rounded-2xl shadow-xl hover:bg-red-500 hover:text-white transition-all">
-                    <Trash2 size={16} />
-                 </button>
+                <button onClick={() => startEdit(member)} className="p-3 bg-white/90 backdrop-blur text-[#042f24] rounded-2xl shadow-xl hover:bg-[#d4af37] transition-all">
+                  <Edit2 size={16} />
+                </button>
+                <button onClick={() => handleDelete(member.id)} className="p-3 bg-white/90 backdrop-blur text-red-500 rounded-2xl shadow-xl hover:bg-red-500 hover:text-white transition-all">
+                  <Trash2 size={16} />
+                </button>
               </div>
 
               <div className="aspect-[4/5] rounded-[2rem] overflow-hidden mb-8 border-2 border-slate-50 relative">
-                <img 
-                  src={member.image_url || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=400'} 
+                <img
+                  src={member.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=042f24&color=d4af37&size=400`}
                   className="w-full h-full object-cover transition-all duration-700"
                   alt={member.name}
                 />
                 <div className="absolute bottom-4 left-4">
-                   <span className="bg-[#042f24] text-[#d4af37] px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">
-                     Priority: {member.sort_order}
-                   </span>
+                  <span className="bg-[#042f24] text-[#d4af37] px-4 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-xl">
+                    Priority: {member.sort_order}
+                  </span>
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                   <Briefcase size={12} className="text-[#d4af37]" />
-                   <span className="text-[10px] font-black uppercase text-[#d4af37] tracking-[0.2em]">{member.role}</span>
+                  <Briefcase size={12} className="text-[#d4af37]" />
+                  <span className="text-[10px] font-black uppercase text-[#d4af37] tracking-[0.2em]">{member.role}</span>
                 </div>
                 <h3 className="text-2xl font-black text-[#042f24] italic mb-4">{member.name}</h3>
                 <p className="text-slate-500 text-sm italic leading-relaxed line-clamp-3">"{member.bio || 'Dedicated community leader.'}"</p>
@@ -301,9 +301,9 @@ const AdminLeadership = () => {
 
           {members.length === 0 && !isAdding && (
             <div className="col-span-full py-32 border-4 border-dashed border-[#f0e6d2] rounded-[4rem] text-center bg-white/50">
-               <Users size={64} className="text-[#d4af37]/20 mx-auto mb-6" />
-               <h2 className="text-2xl font-black text-[#042f24] italic">Empty Leadership List</h2>
-               <p className="text-slate-400 font-medium">Add your executive members to showcase the masjid's leadership.</p>
+              <Users size={64} className="text-[#d4af37]/20 mx-auto mb-6" />
+              <h2 className="text-2xl font-black text-[#042f24] italic">Empty Leadership List</h2>
+              <p className="text-slate-400 font-medium">Add your executive members to showcase the masjid's leadership.</p>
             </div>
           )}
         </div>
