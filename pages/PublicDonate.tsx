@@ -198,9 +198,9 @@ const PublicDonate = () => {
                                     <div className="w-2 h-2 rounded-full bg-[#d4af37] mt-2 shrink-0"></div>
                                     <div>
                                         <h4 className="font-bold text-lg mb-1">Check / Money Order</h4>
-                                        <p className="text-white/60 text-sm leading-relaxed">
-                                            Make payable to "Jamiatul Haq" and mail to:<br />
-                                            <span className="text-white font-medium">{profile?.address || "385 Lewis Street, Somerset, NJ 08873"}</span>
+                                        <p className="text-[#aebbb5] text-sm">
+                                            Make payable to "Islamic Society of Franklin Township" and mail to:<br />
+                                            <span className="text-white font-bold">{profile?.address || "385 Lewis Street, Somerset, NJ 08873"}</span>
                                         </p>
                                     </div>
                                 </div>
