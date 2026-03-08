@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabase';
-import { 
-  Plus, Trash2, Edit2, X, Loader2, AlertCircle, 
+import {
+  Plus, Trash2, Edit2, X, Loader2, AlertCircle,
   CheckCircle2, Users, Heart, GraduationCap, Home, Clock, Star, ArrowUp, ArrowDown
 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ const AdminServices = () => {
   const [success, setSuccess] = useState<string | null>(null);
 
   // Form State
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [iconName, setIconName] = useState('star');
@@ -39,7 +40,7 @@ const AdminServices = () => {
         .from('services')
         .select('*')
         .order('sort_order', { ascending: true });
-      
+
       if (error) throw error;
       setServices(data || []);
     } catch (err: any) {
@@ -49,28 +50,35 @@ const AdminServices = () => {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
 
     try {
-      const nextSortOrder = services.length > 0 
-        ? Math.max(...services.map(s => s.sort_order || 0)) + 1 
-        : 0;
+      const payload: any = {
+        title,
+        description,
+        icon_name: iconName
+      };
 
-      const { error: insertError } = await supabase.from('services').insert([
-        { 
-          title, 
-          description, 
-          icon_name: iconName,
-          sort_order: nextSortOrder
-        }
-      ]);
+      let resultError;
+      if (editingServiceId) {
+        const { error } = await supabase.from('services').update(payload).match({ id: editingServiceId });
+        resultError = error;
+      } else {
+        const nextSortOrder = services.length > 0
+          ? Math.max(...services.map(s => s.sort_order || 0)) + 1
+          : 0;
+        payload.sort_order = nextSortOrder;
 
-      if (insertError) throw insertError;
+        const { error } = await supabase.from('services').insert([payload]);
+        resultError = error;
+      }
 
-      setSuccess("Service added successfully!");
+      if (resultError) throw resultError;
+
+      setSuccess(editingServiceId ? "Service updated successfully!" : "Service added successfully!");
       resetForm();
       fetchServices();
       setIsAdding(false);
@@ -80,6 +88,15 @@ const AdminServices = () => {
       setSaving(false);
       setTimeout(() => setSuccess(null), 3000);
     }
+  };
+
+  const startEditService = (service: any) => {
+    setEditingServiceId(service.id);
+    setTitle(service.title);
+    setDescription(service.description);
+    setIconName(service.icon_name || 'star');
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id: string) => {
@@ -99,6 +116,8 @@ const AdminServices = () => {
     setTitle('');
     setDescription('');
     setIconName('star');
+    setEditingServiceId(null);
+    setIsAdding(false);
   };
 
   const getIcon = (name: string) => {
@@ -116,10 +135,13 @@ const AdminServices = () => {
           <h1 className="text-4xl font-black text-[#042f24] italic tracking-tight">Services CMS</h1>
           <p className="text-slate-500 font-medium">Manage the spiritual and community services offered.</p>
         </div>
-        <button 
+        <button
           onClick={() => {
-            setIsAdding(!isAdding);
             if (isAdding) resetForm();
+            else {
+              resetForm(); // clear edit state if opening fresh
+              setIsAdding(true);
+            }
           }}
           className="bg-[#042f24] text-[#d4af37] px-8 py-4 rounded-full font-black flex items-center gap-3 hover:bg-[#d4af37] hover:text-[#042f24] transition-all shadow-xl uppercase text-xs tracking-widest"
         >
@@ -140,12 +162,12 @@ const AdminServices = () => {
       )}
 
       {isAdding && (
-        <form onSubmit={handleCreate} className="bg-white p-12 rounded-[3.5rem] shadow-2xl border-2 border-[#f0e6d2] mb-16 animate-in zoom-in-95 duration-300">
+        <form onSubmit={handleSave} className="bg-white p-12 rounded-[3.5rem] shadow-2xl border-2 border-[#f0e6d2] mb-16 animate-in zoom-in-95 duration-300">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             <div className="space-y-8">
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Service Title</label>
-                <input 
+                <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className={inputClasses}
@@ -161,11 +183,10 @@ const AdminServices = () => {
                       key={opt.id}
                       type="button"
                       onClick={() => setIconName(opt.id)}
-                      className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${
-                        iconName === opt.id 
-                          ? 'bg-[#042f24] border-[#d4af37] text-[#d4af37]' 
+                      className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all ${iconName === opt.id
+                          ? 'bg-[#042f24] border-[#d4af37] text-[#d4af37]'
                           : 'bg-slate-50 border-slate-100 text-slate-400 hover:border-[#d4af37]/30'
-                      }`}
+                        }`}
                     >
                       <opt.icon size={24} />
                       <span className="text-[8px] font-black uppercase tracking-widest">{opt.label}</span>
@@ -177,7 +198,7 @@ const AdminServices = () => {
 
             <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-[#d4af37] mb-3">Service Description</label>
-              <textarea 
+              <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className={`${inputClasses} h-56 resize-none font-medium text-slate-700`}
@@ -187,12 +208,12 @@ const AdminServices = () => {
             </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={saving}
             className="w-full mt-12 bg-[#042f24] text-[#d4af37] py-6 rounded-full font-black uppercase tracking-[0.3em] shadow-2xl hover:bg-[#d4af37] hover:text-[#042f24] transition-all disabled:opacity-50 flex items-center justify-center gap-4"
           >
-            {saving ? <Loader2 className="animate-spin" size={24} /> : 'Save Service Bismillah'}
+            {saving ? <Loader2 className="animate-spin" size={24} /> : editingServiceId ? 'Save Changes Bismillah' : 'Save Service Bismillah'}
           </button>
         </form>
       )}
@@ -210,28 +231,36 @@ const AdminServices = () => {
                   <div className="p-5 bg-slate-50 rounded-2xl text-[#d4af37] group-hover:bg-[#042f24] transition-colors">
                     {getIcon(service.icon_name)}
                   </div>
-                  <button 
-                    onClick={() => handleDelete(service.id)}
-                    className="p-3 text-red-100 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); startEditService(service); }}
+                      className="p-3 text-[#042f24] hover:text-[#d4af37] hover:bg-slate-50 rounded-xl transition-all"
+                    >
+                      <Edit2 size={18} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(service.id); }}
+                      className="p-3 text-red-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
                 <h3 className="text-2xl font-black text-[#042f24] italic mb-4">{service.title}</h3>
                 <p className="text-slate-500 text-sm italic leading-relaxed line-clamp-4">{service.description}</p>
               </div>
-              
+
               <div className="mt-8 pt-6 border-t border-slate-50 flex justify-between items-center">
-                 <span className="text-[10px] font-black uppercase text-[#d4af37] tracking-widest">Order: {service.sort_order}</span>
+                <span className="text-[10px] font-black uppercase text-[#d4af37] tracking-widest">Order: {service.sort_order}</span>
               </div>
             </div>
           ))}
 
           {services.length === 0 && !isAdding && (
             <div className="col-span-full py-32 border-4 border-dashed border-[#f0e6d2] rounded-[4rem] text-center bg-white/50">
-               <Star size={64} className="text-[#d4af37]/20 mx-auto mb-6" />
-               <h2 className="text-2xl font-black text-[#042f24] italic">No services defined yet</h2>
-               <p className="text-slate-400 font-medium">Click "Add Service" to populate this section.</p>
+              <Star size={64} className="text-[#d4af37]/20 mx-auto mb-6" />
+              <h2 className="text-2xl font-black text-[#042f24] italic">No services defined yet</h2>
+              <p className="text-slate-400 font-medium">Click "Add Service" to populate this section.</p>
             </div>
           )}
         </div>
